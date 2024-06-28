@@ -54,7 +54,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/me", async (req, res) => {
+app.get("/profile", async (req, res) => {
   const token = req.headers.authorization;
   try {
     const decoded = jwt.verify(token, JWT_SECRET);

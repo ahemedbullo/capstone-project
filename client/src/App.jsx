@@ -9,13 +9,45 @@ import HomePage from "./components/HomePage.jsx";
 import { UserContext } from "./UserContext.js";
 
 function App() {
+  const [currentProfile, setCurrentProfile] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = window.localStorage.getItem("token");
+      if (token) {
+        axios.defaults.headers.Authorization = token;
+        try {
+          const response = await axios.get(
+            "http://localhost:3000/auth/profile"
+          );
+          setCurrentProfile(response.data.user);
+          navigate("/home");
+        } catch (error) {
+          navigate("/");
+        }
+      } else {
+        navigate("/");
+      }
+    };
+    fetchProfile();
+  });
+  const handleLogout = async () => {
+    window.localStorage.removeItem("token");
+    axios.defaults.headers.Authorization = null;
+    setCurrentProfile(null);
+    navigate("/");
+  };
   return (
     <>
-      <Routes>
-        <Route path="/" element={<LoginForm />} />
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/signup" element={<SignupForm />} />
-      </Routes>
+      <UserContext.Provider value={{ currentProfile, setCurrentProfile }}>
+        <Routes>
+          <Route path="/" element={<LoginForm />} />
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/signup" element={<SignupForm />} />
+        </Routes>
+      </UserContext.Provider>
+      {currentProfile && <button onClick={handleLogout}>Logout</button>}
     </>
   );
 }
