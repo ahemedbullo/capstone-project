@@ -22,16 +22,13 @@ function App() {
             "http://localhost:3000/auth/profile"
           );
           setCurrentProfile(response.data.user);
-          navigate("/home");
         } catch (error) {
           navigate("/");
         }
-      } else {
-        navigate("/");
       }
     };
     fetchProfile();
-  });
+  }, []);
   const handleLogout = async () => {
     window.localStorage.removeItem("token");
     axios.defaults.headers.Authorization = null;
@@ -39,17 +36,22 @@ function App() {
     navigate("/");
   };
   return (
-    <>
-      <UserContext.Provider value={{ currentProfile, setCurrentProfile }}>
-        <Routes>
-          <Route path="/" element={<LoginForm />} />
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/signup" element={<SignupForm />} />
-        </Routes>
-      </UserContext.Provider>
+    <UserContext.Provider value={{ currentProfile, setCurrentProfile }}>
+      <Routes>
+        {currentProfile ? (
+          <>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/home" element={<HomePage />} />
+          </>
+        ) : (
+          <>
+            <Route path="/" element={<LoginForm />} />
+            <Route path="/signup" element={<SignupForm />} />
+          </>
+        )}
+      </Routes>
       {currentProfile && <button onClick={handleLogout}>Logout</button>}
-    </>
+    </UserContext.Provider>
   );
 }
-
 export default App;
