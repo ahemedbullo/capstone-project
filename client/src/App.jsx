@@ -1,35 +1,57 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState, useEffect } from "react";
+import "./App.css";
+import { Routes, Route } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import LoginForm from "./components/LoginForm.jsx";
+import SignupForm from "./components/SignupForm.jsx";
+import HomePage from "./components/HomePage.jsx";
+import { UserContext } from "./UserContext.js";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [currentProfile, setCurrentProfile] = useState(null);
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = window.localStorage.getItem("token");
+      if (token) {
+        axios.defaults.headers.Authorization = token;
+        try {
+          const response = await axios.get(
+            "http://localhost:3000/auth/profile"
+          );
+          setCurrentProfile(response.data.user);
+        } catch (error) {
+          navigate("/");
+        }
+      }
+    };
+    fetchProfile();
+  }, []);
+  const handleLogout = async () => {
+    window.localStorage.removeItem("token");
+    axios.defaults.headers.Authorization = null;
+    setCurrentProfile(null);
+    navigate("/");
+  };
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <UserContext.Provider value={{ currentProfile, setCurrentProfile }}>
+      <Routes>
+        {currentProfile ? (
+          <>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/home" element={<HomePage />} />
+          </>
+        ) : (
+          <>
+            <Route path="/" element={<LoginForm />} />
+            <Route path="/signup" element={<SignupForm />} />
+          </>
+        )}
+      </Routes>
+      {currentProfile && <button onClick={handleLogout}>Logout</button>}
+    </UserContext.Provider>
+  );
 }
-
-export default App
+export default App;
