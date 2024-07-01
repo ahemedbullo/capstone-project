@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import { ExpenseContext } from "../ExpenseContext.js";
 
 const Expense = () => {
   const [expenses, setExpenses] = useState([]);
   const [expenseName, setExpenseName] = useState("");
   const [amount, setAmount] = useState("");
   const [budget, setBudget] = useState("");
+  const { setExistingExpenses } = useContext(ExpenseContext);
 
   const handleNameChange = (event) => {
     setExpenseName(event.target.value);
@@ -20,6 +22,7 @@ const Expense = () => {
     event.preventDefault();
     const newExpense = { expenseName, amount, budget };
     setExpenses([...expenses, newExpense]);
+    setExistingExpenses(expenses);
     setExpenseName("");
     setAmount("");
     setBudget("");

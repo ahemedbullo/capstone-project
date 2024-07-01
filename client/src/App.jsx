@@ -29,6 +29,7 @@ function App() {
     };
     fetchProfile();
   }, []);
+
   const handleLogout = async () => {
     window.localStorage.removeItem("token");
     axios.defaults.headers.Authorization = null;
@@ -50,7 +51,7 @@ function App() {
           </>
         )}
       </Routes>
-      {currentProfile && <button onClick={handleLogout}>Logout</button>}
+      {/* {currentProfile && <button onClick={handleLogout}>Logout</button>} */}
     </UserContext.Provider>
   );
 }
