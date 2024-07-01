@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import axios from "axios";
 import { UserContext } from "../UserContext";
 import { Link, useNavigate } from "react-router-dom";
+import "./Styles/LoginForm.css";
 const LoginForm = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -45,16 +46,16 @@ const LoginForm = () => {
       <div className="login-container">
         <h2>Login</h2>
         <form onSubmit={handleSubmit}>
-          <div>
-            <label>Username</label>
+          <div className="username">
+            <label>Username: </label>
             <input
               type="text"
               value={username}
               onChange={handleUsernameChange}
             />
           </div>
-          <div>
-            <label>Password</label>
+          <div className="password">
+            <label>Password: </label>
             <input
               type="password"
               value={password}
@@ -64,7 +65,9 @@ const LoginForm = () => {
           <p>
             New to sfx?<Link to={"/signup"}> Sign up now.</Link>{" "}
           </p>
-          <button type="submit">Login</button>
+          <button type="submit" className="login-btn">
+            Login
+          </button>
         </form>
         {message && <p>{message}</p>}
       </div>

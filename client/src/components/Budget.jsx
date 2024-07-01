@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { BudgetContext } from "../BudgetContext";
 
 const Budget = () => {
   const [budgets, setBudgets] = useState([]);
   const [budgetName, setBudgetName] = useState("");
   const [budgetAmount, setBudgetAmount] = useState("");
+  const { existingBudgets, setExistingBudgets } = useContext(BudgetContext);
 
   const handleBudgetNameChange = (event) => {
     setBudgetName(event.target.value);
@@ -15,6 +17,7 @@ const Budget = () => {
     event.preventDefault();
     const newBudget = { budgetName, budgetAmount };
     setBudgets([...budgets, newBudget]);
+    setExistingBudgets(budgets);
     setBudgetName("");
     setBudgetAmount("");
   };

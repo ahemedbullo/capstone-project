@@ -1,5 +1,6 @@
 import React, { useContext, useState } from "react";
 import { ExpenseContext } from "../ExpenseContext.js";
+import { BudgetContext } from "../BudgetContext.js";
 
 const Expense = () => {
   const [expenses, setExpenses] = useState([]);
@@ -7,6 +8,7 @@ const Expense = () => {
   const [amount, setAmount] = useState("");
   const [budget, setBudget] = useState("");
   const { setExistingExpenses } = useContext(ExpenseContext);
+  const { existingBudgets } = useContext(BudgetContext);
 
   const handleNameChange = (event) => {
     setExpenseName(event.target.value);
@@ -52,7 +54,14 @@ const Expense = () => {
           </div>
           <div>
             <label>Budget</label>
-            <input type="text" value={budget} onChange={handleBudgetChange} />
+            <select value={budget} onChange={handleBudgetChange}>
+              <option value="">Select a budget</option>
+              {existingBudgets.map((budget) => (
+                <option key={budget} value={budget}>
+                  {budget}
+                </option>
+              ))}
+            </select>
           </div>
           <button type="submit">Add Expense Button</button>
         </form>

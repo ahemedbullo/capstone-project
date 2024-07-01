@@ -5,10 +5,12 @@ import { UserContext } from "../UserContext.js";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ExpenseContext } from "../ExpenseContext.js";
+import { BudgetContext } from "../BudgetContext.js";
 
 const HomePage = () => {
   const { currentProfile, setCurrentProfile } = useContext(UserContext);
   const [existingExpenses, setExistingExpenses] = useState(null);
+  const [existingBudgets, setExistingBudgets] = useState([]);
 
   const navigate = useNavigate();
 
@@ -24,18 +26,20 @@ const HomePage = () => {
       <ExpenseContext.Provider
         value={{ existingExpenses, setExistingExpenses }}
       >
-        <button onClick={handleLogout}>Logout</button>
-        <div>Welcome {currentProfile}</div>
-        <div>This will be the home page</div>
-        <Expense />
-        {existingExpenses ? (
-          <>
-            <p>Create you budgets</p>
-            <Budget />
-          </>
-        ) : (
-          <></>
-        )}
+        <BudgetContext.Provider value={{ existingBudgets, setExistingBudgets }}>
+          <button onClick={handleLogout}>Logout</button>
+          <div>Welcome {currentProfile}</div>
+          <div>This will be the home page</div>
+          <Expense />
+          {existingExpenses ? (
+            <>
+              <p>Create you budgets</p>
+              <Budget />
+            </>
+          ) : (
+            <></>
+          )}
+        </BudgetContext.Provider>
       </ExpenseContext.Provider>
     </>
   );
