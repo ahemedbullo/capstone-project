@@ -28,7 +28,7 @@ const HomePage = () => {
       >
         <BudgetContext.Provider value={{ existingBudgets, setExistingBudgets }}>
           <button onClick={handleLogout}>Logout</button>
-          <div>Welcome {currentProfile}</div>
+          <div>Welcome </div>
           <div>This will be the home page</div>
           <Expense />
           {existingExpenses ? (

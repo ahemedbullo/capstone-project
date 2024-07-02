@@ -1,7 +1,7 @@
 body{
     background-color: beige;
 }
-.login-container {
+.signup-container {
     max-width: 300px;
     margin: 40px auto;
     background-color: #f0f0f0;
@@ -11,7 +11,7 @@ body{
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   }
   
-  .login-container h2 {
+  .signup-container h2 {
     text-align: center;
     margin-bottom: 20px;
   }
@@ -32,7 +32,7 @@ body{
     border: 1px solid #ccc;
   }
   
-  .login-btn {
+  .signup-btn {
     background-color: #4CAF50;
     color: #fff;
     padding: 10px 20px;
@@ -41,7 +41,7 @@ body{
     cursor: pointer;
   }
   
-  .login-btn:hover {
+  .signup-btn:hover {
     background-color: #3e8e41;
   }
   

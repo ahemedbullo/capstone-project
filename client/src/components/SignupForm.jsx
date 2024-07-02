@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "../UserContext";
+import "./Styles/SignupForm.css";
 
 const SignupForm = () => {
   const [username, setUsername] = useState("");
@@ -67,7 +68,9 @@ const SignupForm = () => {
           <p>
             Already have an account ?<Link to={"/"}> Log in now.</Link>{" "}
           </p>
-          <button type="submit">Sign Up</button>
+          <button type="submit" className="signup-btn">
+            Sign Up
+          </button>
         </form>
         {message && <p>{message}</p>}
       </div>
