@@ -23,26 +23,32 @@ const HomePage = () => {
 
   return (
     <>
-      <ExpenseContext.Provider
-        value={{ existingExpenses, setExistingExpenses }}
-      >
-        <BudgetContext.Provider value={{ existingBudgets, setExistingBudgets }}>
-          <button onClick={handleLogout}>Logout</button>
-          <div>Welcome </div>
-          <div>This will be the home page</div>
-          <Expense />
-          {existingExpenses ? (
-            <>
-              <p>Create you budgets</p>
-              <Budget />
-            </>
-          ) : (
-            <></>
-          )}
-        </BudgetContext.Provider>
-      </ExpenseContext.Provider>
+    <div>
+      Welcome {currentProfile.username}
+      <button onClick={handleLogout}>Logout</button>
+    </div>
+     <Budget/>
     </>
   );
 };
 
 export default HomePage;
+{/* <ExpenseContext.Provider
+value={{ existingExpenses, setExistingExpenses }}
+>
+<BudgetContext.Provider value={{ existingBudgets, setExistingBudgets }}>
+  <button onClick={handleLogout}>Logout</button>
+  <div>Welcome </div>
+  <div>This will be the home page</div>
+  <Expense />
+  <Budget />
+  {existingExpenses ? (
+    <>
+      <p>Create you budgets</p>
+      <Budget />
+    </>
+  ) : (
+    <></>
+  )}
+</BudgetContext.Provider>
+</ExpenseContext.Provider> */}
