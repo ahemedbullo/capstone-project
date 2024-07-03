@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from "react";
 import { UserContext } from "../UserContext.js";
-import axios from "axios"; // Import Axios
+import axios from "axios";
 
 const BudgetPage = () => {
   const [budgets, setBudgets] = useState([]);

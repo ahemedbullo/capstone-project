@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import BudgetPage from "./BudgetPage.jsx";
 import ExpensePage from "./ExpensePage.jsx";
-import './Styles/HomePage.css'
+import "./Styles/HomePage.css";
+
 const HomePage = () => {
   const { currentProfile, setCurrentProfile } = useContext(UserContext);
 
@@ -19,25 +20,25 @@ const HomePage = () => {
 
   return (
     <>
-    <div className="homepage-container">
-      Welcome
-      <div className="content-container">
-        <div className="box">
-        <BudgetPage/>
+      <div className="homepage-container">
+        Welcome
+        <div className="content-container">
+          <div className="box">
+            <BudgetPage />
+          </div>
+          <div className="box">
+            <ExpensePage />
+          </div>
         </div>
-     <div className="box">
-     <ExpensePage/>
-     </div>
-
+        <button onClick={handleLogout}>Logout</button>
       </div>
-      <button onClick={handleLogout}>Logout</button>
-    </div>
     </>
   );
 };
 
 export default HomePage;
-{/* <ExpenseContext.Provider
+{
+  /* <ExpenseContext.Provider
 value={{ existingExpenses, setExistingExpenses }}
 >
 <BudgetContext.Provider value={{ existingBudgets, setExistingBudgets }}>
@@ -55,4 +56,5 @@ value={{ existingExpenses, setExistingExpenses }}
     <></>
   )}
 </BudgetContext.Provider>
-</ExpenseContext.Provider> */}
+</ExpenseContext.Provider> */
+}

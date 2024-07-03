@@ -1,23 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
+import { UserContext } from "../UserContext.js";
+import axios from "axios";
 
 const ExpensePage = () => {
   const [expenses, setExpenses] = useState([]);
   const [expenseName, setExpenseName] = useState("");
   const [amount, setAmount] = useState("");
   const [budget, setBudget] = useState(""); // select a budget from the list
-  const [budgets, setBudgets] = useState([]); // list of existing budgets
+  const [existingBudgets, setExistingBudgets] = useState([]); // list of existing budgets
+  const { currentProfile } = useContext(UserContext);
+
+  useEffect(() => {
+    const fetchBudgets = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:3000/budgets/${currentProfile}`
+        );
+        setExistingBudgets(response.data);
+      } catch (error) {
+        console.error("Error fetching budgets:", error);
+      }
+    };
+    fetchBudgets();
+  }, [currentProfile]);
 
   const addExpense = () => {
     const newExpense = { expenseName, amount, budget };
     setExpenses([...expenses, newExpense]);
     setExpenseName("");
     setAmount("");
-    setBudget("");
-  };
-
-  const addBudget = () => {
-    const newBudget = { budgetName: budget, expenses: [] };
-    setBudgets([...budgets, newBudget]);
     setBudget("");
   };
 
@@ -39,14 +50,13 @@ const ExpensePage = () => {
       />
       <select value={budget} onChange={(e) => setBudget(e.target.value)}>
         <option value="">Select a budget</option>
-        {budgets.map((budget) => (
+        {existingBudgets.map((budget) => (
           <option key={budget.budgetName} value={budget.budgetName}>
             {budget.budgetName}
           </option>
         ))}
       </select>
       <button onClick={addExpense}>Add Expense</button>
-      <button onClick={addBudget}>Add Budget</button>
       <ul>
         {expenses.map((expense) => (
           <li key={expense.expenseName}>
@@ -54,20 +64,6 @@ const ExpensePage = () => {
           </li>
         ))}
       </ul>
-      {budgets.map((budget) => (
-        <div key={budget.budgetName}>
-          <h3>{budget.budgetName}</h3>
-          <ul>
-            {expenses
-              .filter((expense) => expense.budget === budget.budgetName)
-              .map((expense) => (
-                <li key={expense.expenseName}>
-                  {expense.expenseName} - {expense.amount}
-                </li>
-              ))}
-          </ul>
-        </div>
-      ))}
     </div>
   );
 };
