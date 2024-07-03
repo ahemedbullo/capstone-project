@@ -1,16 +1,12 @@
 import React, { useContext, useState } from "react";
-import Expense from "./Expense";
-import Budget from "./Budget.jsx";
 import { UserContext } from "../UserContext.js";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { ExpenseContext } from "../ExpenseContext.js";
-import { BudgetContext } from "../BudgetContext.js";
-
+import BudgetPage from "./BudgetPage.jsx";
+import ExpensePage from "./ExpensePage.jsx";
+import './Styles/HomePage.css'
 const HomePage = () => {
   const { currentProfile, setCurrentProfile } = useContext(UserContext);
-  const [existingExpenses, setExistingExpenses] = useState(null);
-  const [existingBudgets, setExistingBudgets] = useState([]);
 
   const navigate = useNavigate();
 
@@ -23,11 +19,19 @@ const HomePage = () => {
 
   return (
     <>
-    <div>
-      Welcome {currentProfile.username}
+    <div className="homepage-container">
+      Welcome
+      <div className="content-container">
+        <div className="box">
+        <BudgetPage/>
+        </div>
+     <div className="box">
+     <ExpensePage/>
+     </div>
+
+      </div>
       <button onClick={handleLogout}>Logout</button>
     </div>
-     <Budget/>
     </>
   );
 };
