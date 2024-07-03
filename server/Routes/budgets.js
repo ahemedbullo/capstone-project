@@ -1,36 +1,52 @@
 const { PrismaClient } = require("@prisma/client");
 const express = require("express");
 const app = express.Router();
-
 const prisma = new PrismaClient();
+const jwt = require("jsonwebtoken");
+const JWT_SECRET = process.env.JWT_SECRET;
 
-app.post("/", async (req, res) => {
-  const { name, category, userId } = req.body;
+app.post("/:currentProfile", async (req, res) => {
+  const { currentProfile } = req.params;
+  const { budgetName, budgetAmount } = req.body;
+
   try {
     const newBudget = await prisma.budget.create({
       data: {
-        name,
-        category,
-        userId,
+        budgetName,
+        budgetAmount: parseInt(budgetAmount),
+        userId: currentProfile,
       },
     });
-    res.json(newBudget);
+    res.status(201).json(newBudget);
   } catch (error) {
-    console.error('Failed to add budget:', error)
-    res.status(500).json({ error: "Failed to add budget" });
+    console.error(error);
+    res.status(500).json({ error: "Failed to create budget" });
+  }
+});
+app.get("/:currentProfile", async (req, res) => {
+  const { currentProfile } = req.params;
+  try {
+    const budgets = await prisma.budget.findMany({
+      where: { userId: currentProfile },
+    });
+    res.status(200).json(budgets);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch budgets" });
   }
 });
 
-app.get("/:userId", async (req, res) => {
-  const { userId } = req.params;
+app.delete("/:currentProfile/budgets/:budgetId", async (req, res) => {
+  const { currentProfile } = req.params;
+  const { budgetId } = req.params;
   try {
-    const budgets = await prisma.budget.findMany({
-      where: { userId: parseInt(userId) },
+    await prisma.budget.delete({
+      where: { id: budgetId, userId: currentProfile },
     });
-    res.json(budgets);
+    res.status(200).json({ message: "Budget deleted successfully" });
   } catch (error) {
-    console.error('Failed to fetch budgets:', error)
-    res.status(500).json({ error: "Failed to fetch budgets", details: error.message });
+    console.error(error);
+    res.status(500).json({ error: "Failed to delete budget" });
   }
 });
 

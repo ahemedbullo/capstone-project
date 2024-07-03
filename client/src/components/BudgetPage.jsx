@@ -1,65 +1,98 @@
-import React, { useState, useEffect, useContext } from "react";
-import axios from "axios";
+import React, { useState, useContext, useEffect } from "react";
 import { UserContext } from "../UserContext.js";
+import axios from "axios"; // Import Axios
 
 const BudgetPage = () => {
   const [budgets, setBudgets] = useState([]);
   const [budgetName, setBudgetName] = useState("");
-  const [category, setCategory] = useState("");
-  const { currentProfile } = useContext(UserContext);
+  const [budgetAmount, setBudgetAmount] = useState("");
+  const [showDetails, setShowDetails] = useState(false);
+  const { currentProfile } = useContext(UserContext); // Assuming you have user context
 
+  const handleBudgetNameChange = (event) => {
+    setBudgetName(event.target.value);
+  };
+
+  const handlebudgetAmountChange = (event) => {
+    setBudgetAmount(event.target.value);
+  };
   useEffect(() => {
-    if (currentProfile) {
-      const fetchBudgets = async () => {
-        try {
-          const response = await axios.get(`http://localhost:3000/budgets/${currentProfile.id}`);
-          setBudgets(response.data);
-        } catch (error) {
-          console.error("Failed to fetch budgets", error.response ? error.response.data : error.message);
-        }
-      };
-
-      fetchBudgets();
-    }
+    const fetchBudgets = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:3000/budgets/${currentProfile}`
+        );
+        setBudgets(response.data);
+      } catch (error) {
+        console.error("Error fetching budgets:", error);
+      }
+    };
+    fetchBudgets();
   }, [currentProfile]);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const newBudget = { budgetName, budgetAmount };
+    console.log(currentProfile);
 
-  const addBudget = async () => {
     try {
-      const response = await axios.post("http://localhost:3000/budgets", {
-        name: budgetName,
-        category,
-        userId: currentProfile.id,
-      });
+      const response = await axios.post(
+        `http://localhost:3000/budgets/${currentProfile}`,
+        newBudget
+      );
       setBudgets([...budgets, response.data]);
       setBudgetName("");
-      setCategory("");
+      setBudgetAmount("");
     } catch (error) {
-      console.error("Failed to add budget", error.response ? error.response.data : error.message);
+      console.error("Error adding budget:", error);
     }
+  };
+  const handleViewDetails = (index) => {
+    setShowDetails(true);
   };
 
   return (
-    <div>
-      <h2>Budgets</h2>
-      <input
-        type="text"
-        placeholder="Budget Name"
-        value={budgetName}
-        onChange={(e) => setBudgetName(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Category"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-      />
-      <button onClick={addBudget}>Add Budget</button>
-      <ul>
-        {budgets.map((budget) => (
-          <li key={budget.id}>{budget.name} - {budget.category}</li>
+    <>
+      <div className="create-budget-box">
+        <h2>Create a New Budget</h2>
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label>Budget Name</label>
+            <input
+              type="text"
+              value={budgetName}
+              onChange={handleBudgetNameChange}
+              required
+            />
+          </div>
+          <div>
+            <label>Amount</label>
+            <input
+              type="number"
+              value={budgetAmount}
+              onChange={handlebudgetAmountChange}
+              required
+            />
+          </div>
+          <button type="submit">Create New Budget</button>
+        </form>
+      </div>
+      <div className="budgets-container">
+        {budgets.map((budget, index) => (
+          <div key={index} className="budget">
+            <h3>{budget.budgetName}</h3>
+            <p>Amount: ${budget.budgetAmount}</p>
+            <button onClick={() => handleViewDetails(index)}>
+              View Budget Details
+            </button>
+            {showDetails && (
+              <div>
+                <p>Details: {budget.budgetDetails}</p>
+              </div>
+            )}
+          </div>
         ))}
-      </ul>
-    </div>
+      </div>
+    </>
   );
 };
 

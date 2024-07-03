@@ -31,7 +31,6 @@ function App() {
   }, []);
 
   const handleLogout = async () => {
-
     window.localStorage.removeItem("token");
     axios.defaults.headers.Authorization = null;
     setCurrentProfile(null);

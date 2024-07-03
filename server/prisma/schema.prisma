@@ -16,4 +16,13 @@ datasource db {
 model User {
   username String @id
   password String
+  budgets       Budget[]
+}
+
+model Budget {
+  id         Int     @id @default(autoincrement())
+  budgetName  String
+  budgetAmount Int
+  user         User     @relation(fields: [userId], references: [username])
+  userId       String
 }
