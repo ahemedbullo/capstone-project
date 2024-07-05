@@ -7,7 +7,7 @@ const BudgetPage = () => {
   const [budgetName, setBudgetName] = useState("");
   const [budgetAmount, setBudgetAmount] = useState("");
   const [showDetails, setShowDetails] = useState(false);
-  const { currentProfile } = useContext(UserContext); // Assuming you have user context
+  const { currentProfile } = useContext(UserContext);
 
   const handleBudgetNameChange = (event) => {
     setBudgetName(event.target.value);
@@ -29,10 +29,10 @@ const BudgetPage = () => {
     };
     fetchBudgets();
   }, [currentProfile]);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     const newBudget = { budgetName, budgetAmount };
-    console.log(currentProfile);
 
     try {
       const response = await axios.post(

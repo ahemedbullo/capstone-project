@@ -2,8 +2,6 @@ const { PrismaClient } = require("@prisma/client");
 const express = require("express");
 const app = express.Router();
 const prisma = new PrismaClient();
-const jwt = require("jsonwebtoken");
-const JWT_SECRET = process.env.JWT_SECRET;
 
 app.post("/:currentProfile", async (req, res) => {
   const { currentProfile } = req.params;
