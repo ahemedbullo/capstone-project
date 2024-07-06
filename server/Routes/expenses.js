@@ -3,27 +3,27 @@ const express = require("express");
 const app = express.Router();
 const prisma = new PrismaClient();
 
-app.post("/:currentProfile/expenses", async (req, res) => {
+app.post("/:currentProfile/", async (req, res) => {
   const { currentProfile } = req.params;
-  const { expenseName, expenseAmount, budgetId } = req.body;
+  const { expenseName, amount, budgetId } = req.body;
 
   try {
     const newExpense = await prisma.expense.create({
       data: {
         expenseName,
-        expenseAmount: parseInt(expenseAmount),
-        userId: currentProfile,
-        budgetId: parseInt(budgetId),
+        expenseAmount: parseInt(amount),
+        user: { connect: { username: currentProfile } },
+        budget: { connect: { id: budgetId } },
       },
     });
     res.status(201).json(newExpense);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to create expense" });
+    res.status(500).json({ message: "Error creating expense" });
   }
 });
 
-app.get("/:currentProfile/expenses", async (req, res) => {
+app.get("/:currentProfile/", async (req, res) => {
   const { currentProfile } = req.params;
 
   try {
@@ -37,7 +37,7 @@ app.get("/:currentProfile/expenses", async (req, res) => {
   }
 });
 
-app.delete("/:currentProfile/expenses/:expenseId", async (req, res) => {
+app.delete("/:currentProfile/:expenseId", async (req, res) => {
   const { currentProfile } = req.params;
   const { expenseId } = req.params;
   try {

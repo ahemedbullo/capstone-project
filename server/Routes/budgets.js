@@ -34,7 +34,7 @@ app.get("/:currentProfile", async (req, res) => {
   }
 });
 
-app.delete("/:currentProfile/budgets/:budgetId", async (req, res) => {
+app.delete("/:currentProfile/:budgetId", async (req, res) => {
   const { currentProfile } = req.params;
   const { budgetId } = req.params;
   try {
