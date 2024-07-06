@@ -37,7 +37,10 @@ const SignupForm = () => {
       );
       setCurrentProfile(responseToUser.data.user);
       navigate("/home");
-
+      window.localStorage.removeItem("token");
+      axios.defaults.headers.Authorization = null;
+      setCurrentProfile(null);
+      navigate("/");
       setMessage(response.data.message);
     } catch (error) {
       setMessage(error.response.data.error);
