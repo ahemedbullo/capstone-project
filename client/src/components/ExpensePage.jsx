@@ -62,6 +62,22 @@ const ExpensePage = () => {
     }
   };
 
+  const handleDelete = async (expenseId) => {
+    console.log(expenseId);
+    try {
+      await axios.delete(
+        `http://localhost:3000/expenses/${currentProfile}/${parseInt(
+          expenseId
+        )}`
+      );
+      setExpenses(
+        expenses.filter((expense) => expense.id !== parseInt(expenseId))
+      );
+    } catch (error) {
+      console.error("Error Deleting expense", error);
+    }
+  };
+
   return (
     <div>
       <h2>Add Expenses</h2>
@@ -102,6 +118,7 @@ const ExpensePage = () => {
           <li key={`${expense.id}-${expense.amount}`}>
             Expense Name: {expense.expenseName} - Expense Amount: $
             {expense.expenseAmount} - Budget: {expense.budgetName}
+            <button onClick={() => handleDelete(expense.id)}>Delete</button>
           </li>
         ))}
       </ul>

@@ -41,8 +41,14 @@ app.delete("/:currentProfile/:expenseId", async (req, res) => {
   const { currentProfile } = req.params;
   const { expenseId } = req.params;
   try {
+    const expense = await prisma.expense.findFirst({
+      where: { id: parseInt(expenseId), userId: currentProfile },
+    });
+    if (!expense) {
+      return res.status(404).json({ error: "Budget not found" });
+    }
     await prisma.expense.delete({
-      where: { id: expenseId, userId: currentProfile },
+      where: { id: parseInt(expenseId), userId: currentProfile },
     });
     res.status(200).json({ message: "Expense deleted successfully" });
   } catch (error) {

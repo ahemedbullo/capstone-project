@@ -44,7 +44,7 @@ app.delete("/:currentProfile/:budgetId", async (req, res) => {
     if (!budget) {
       return res.status(404).json({ error: "Budget not found" });
     }
-    await prisma.budget.delete({ where: { id: parseInt(budgetId) } }); // Convert budgetId to integer here
+    await prisma.budget.delete({ where: { id: parseInt(budgetId) } });
     res.status(200).json({ message: "Budget deleted successfully" });
   } catch (error) {
     console.error(error);
