@@ -53,6 +53,18 @@ const BudgetPage = () => {
     setDetailsId(id === detailsId ? null : id);
   };
 
+  const handleDelete = async (budgetId) => {
+    console.log(budgetId);
+    try {
+      await axios.delete(
+        `http://localhost:3000/budgets/${currentProfile}/${parseInt(budgetId)}`
+      );
+      setBudgets(budgets.filter((budget) => budget.id !== parseInt(budgetId)));
+    } catch (error) {
+      console.error("Error Deleting Cards", error);
+    }
+  };
+
   return (
     <>
       <div className="create-budget-box">
@@ -84,12 +96,17 @@ const BudgetPage = () => {
           <div key={budget.id} className="budget">
             <h3>{budget.budgetName}</h3>
             <p>Amount: ${budget.budgetAmount}</p>
-            <button
-              className="details-btn"
-              onClick={() => handleViewDetails(budget.id)}
-            >
-              View Budget Details
-            </button>
+            <div className="buttons">
+              {" "}
+              <button
+                className="details-btn"
+                onClick={() => handleViewDetails(budget.id)}
+              >
+                View Budget Details
+              </button>
+              <button onClick={() => handleDelete(budget.id)}>Delete</button>
+            </div>
+
             {detailsId === budget.id && (
               <div>
                 <p>Details: {budget.budgetDetails}</p>

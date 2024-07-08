@@ -25,7 +25,12 @@
 .budget p {
     margin: 10px 0;
 }
-
+.buttons{
+    display: flex;
+    flex: wrap;
+    gap: 20px;
+    box-sizing: content-box;
+}
 
 .budget button {
     background-color: #4CAF50;
