@@ -1,21 +1,23 @@
 import React, { useState, useContext, useEffect } from "react";
 import { UserContext } from "../UserContext.js";
 import axios from "axios";
+import "./Styles/BudgetPage.css";
 
 const BudgetPage = () => {
   const [budgets, setBudgets] = useState([]);
   const [budgetName, setBudgetName] = useState("");
   const [budgetAmount, setBudgetAmount] = useState("");
-  const [showDetails, setShowDetails] = useState(false);
+  const [detailsId, setDetailsId] = useState(null);
   const { currentProfile } = useContext(UserContext);
 
   const handleBudgetNameChange = (event) => {
     setBudgetName(event.target.value);
   };
 
-  const handlebudgetAmountChange = (event) => {
+  const handleBudgetAmountChange = (event) => {
     setBudgetAmount(event.target.value);
   };
+
   useEffect(() => {
     const fetchBudgets = async () => {
       try {
@@ -46,8 +48,9 @@ const BudgetPage = () => {
       console.error("Error adding budget:", error);
     }
   };
-  const handleViewDetails = (index) => {
-    setShowDetails(true);
+
+  const handleViewDetails = (id) => {
+    setDetailsId(id === detailsId ? null : id);
   };
 
   return (
@@ -69,7 +72,7 @@ const BudgetPage = () => {
             <input
               type="number"
               value={budgetAmount}
-              onChange={handlebudgetAmountChange}
+              onChange={handleBudgetAmountChange}
               required
             />
           </div>
@@ -77,14 +80,17 @@ const BudgetPage = () => {
         </form>
       </div>
       <div className="budgets-container">
-        {budgets.map((budget, index) => (
-          <div key={index} className="budget">
+        {budgets.map((budget) => (
+          <div key={budget.id} className="budget">
             <h3>{budget.budgetName}</h3>
             <p>Amount: ${budget.budgetAmount}</p>
-            <button onClick={() => handleViewDetails(index)}>
+            <button
+              className="details-btn"
+              onClick={() => handleViewDetails(budget.id)}
+            >
               View Budget Details
             </button>
-            {showDetails && (
+            {detailsId === budget.id && (
               <div>
                 <p>Details: {budget.budgetDetails}</p>
               </div>
