@@ -8,11 +8,13 @@ const PORT = 3000;
 const userAuth = require("./Routes/userAuth.js");
 const budgets = require("./Routes/budgets.js");
 const expenses = require("./Routes/expenses.js");
+//const accounts = require("./Routes/accounts.js");
 app.use(express.json());
 app.use(cors());
 app.use("/auth", userAuth);
 app.use("/budgets", budgets);
 app.use("/expenses", expenses);
+//app.use("/accounts", accounts);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

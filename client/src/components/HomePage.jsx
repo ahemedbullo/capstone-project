@@ -5,6 +5,7 @@ import axios from "axios";
 import BudgetPage from "./BudgetPage.jsx";
 import ExpensePage from "./ExpensePage.jsx";
 import "./Styles/HomePage.css";
+import Accounts from "./Accounts.jsx";
 
 const HomePage = () => {
   const { currentProfile, setCurrentProfile } = useContext(UserContext);
@@ -23,6 +24,7 @@ const HomePage = () => {
       <div className="homepage-container">
         Welcome
         <div className="content-container">
+          <Accounts />
           <div className="box">
             <BudgetPage />
           </div>
