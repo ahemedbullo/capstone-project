@@ -43,7 +43,7 @@ const ExpensePage = () => {
     event.preventDefault();
     const newExpense = {
       expenseName,
-      amount: parseInt(amount),
+      amount: parseFloat(amount),
       budgetId: budget.id,
       budgetName: budget.name,
     };
@@ -63,7 +63,6 @@ const ExpensePage = () => {
   };
 
   const handleDelete = async (expenseId) => {
-    console.log(expenseId);
     try {
       await axios.delete(
         `http://localhost:3000/expenses/${currentProfile}/${parseInt(

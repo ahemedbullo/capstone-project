@@ -23,7 +23,7 @@ model User {
 model Budget {
   id         Int     @id @default(autoincrement())
   budgetName  String
-  budgetAmount Int
+  budgetAmount Float
   user         User     @relation(fields: [userId], references: [username])
   userId       String
   expenses Expense[]
@@ -32,9 +32,10 @@ model Budget {
 model Expense {
   id         Int     @id @default(autoincrement())
   expenseName  String
-  expenseAmount Int
+  expenseAmount Float 
   userId       String
   user         User     @relation(fields: [userId], references: [username])
   budgetId Int
   budget Budget         @relation(fields: [budgetId], references: [id])
+  budgetName String?
 }

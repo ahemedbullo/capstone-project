@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Budget" ALTER COLUMN "budgetAmount" SET DATA TYPE DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "Expense" ALTER COLUMN "expenseAmount" SET DATA TYPE DOUBLE PRECISION;

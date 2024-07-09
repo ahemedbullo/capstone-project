@@ -11,7 +11,7 @@ app.post("/:currentProfile", async (req, res) => {
     const newBudget = await prisma.budget.create({
       data: {
         budgetName,
-        budgetAmount: parseInt(budgetAmount),
+        budgetAmount: parseFloat(budgetAmount),
         userId: currentProfile,
       },
     });
@@ -26,6 +26,9 @@ app.get("/:currentProfile", async (req, res) => {
   try {
     const budgets = await prisma.budget.findMany({
       where: { userId: currentProfile },
+      include: {
+        expenses: true,
+      },
     });
     res.status(200).json(budgets);
   } catch (error) {
@@ -39,12 +42,12 @@ app.delete("/:currentProfile/:budgetId", async (req, res) => {
   const { budgetId } = req.params;
   try {
     const budget = await prisma.budget.findFirst({
-      where: { id: parseInt(budgetId), userId: currentProfile },
+      where: { id: parseFloat(budgetId), userId: currentProfile },
     });
     if (!budget) {
       return res.status(404).json({ error: "Budget not found" });
     }
-    await prisma.budget.delete({ where: { id: parseInt(budgetId) } });
+    await prisma.budget.delete({ where: { id: parseFloat(budgetId) } });
     res.status(200).json({ message: "Budget deleted successfully" });
   } catch (error) {
     console.error(error);
