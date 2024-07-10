@@ -3,36 +3,83 @@
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
-}
-
-
-.budget {
+  }
+  
+  
+  .budget {
     background-color: #f9f9f9;
     border: 1px solid #ddd;
     border-radius: 5px;
     padding: 20px;
-    width: calc(33.333% - 20px); /* 3 cards per row */
+    width: calc(50% - 20px); /* 2 cards per row */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    box-sizing:content-box;
-}
-
-
-.budget h2 {
+    box-sizing: border-box;
+  }
+  
+  
+  .budget h3 {
     margin-top: 0;
-}
-
-
-.budget p {
+  }
+  
+  
+  .budget p {
     margin: 10px 0;
-}
-.buttons{
+  }
+  
+  
+  .buttons {
     display: flex;
-    flex: wrap;
-    gap: 20px;
-    box-sizing: content-box;
-}
-
-.budget button {
+    gap: 10px;
+    margin-top: 15px;
+  }
+  
+  
+  .budget button {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    flex: 1;
+  }
+  
+  
+  .budget button.details-btn {
+    background-color:#4CAF50;
+  }
+  
+  
+  .create-budget-box {
+    background-color: #f9f9f9;
+    border: 1px solid #dddddd;
+    border-radius: 5px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  
+  .create-budget-box h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+  }
+  
+  
+  .create-budget-box input {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  
+  .create-budget-box button {
     background-color: #4CAF50;
     border: none;
     color: white;
@@ -44,6 +91,7 @@
     margin-top: 10px;
     cursor: pointer;
     border-radius: 5px;
-}
-
-
+  }
+  
+  
+  

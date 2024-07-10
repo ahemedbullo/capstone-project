@@ -1,6 +1,9 @@
 import React, { useState, useContext, useEffect } from "react";
 import { UserContext } from "../UserContext.js";
 import axios from "axios";
+import "./Styles/ExpensePage.css";
+import { BudgetContext } from "../BudgetContext.js";
+import { ExpenseContext } from "../ExpenseContext.js";
 
 const ExpensePage = () => {
   const [expenses, setExpenses] = useState([]);
@@ -8,7 +11,11 @@ const ExpensePage = () => {
   const [amount, setAmount] = useState("");
   const [budget, setBudget] = useState({ id: "", name: "" });
   const [budgetsWithAmountLeft, setBudgetsWithAmountLeft] = useState([]);
+  const { contextExpenses, setContextExpenses } = useContext(ExpenseContext);
   const { currentProfile } = useContext(UserContext);
+  const { contextBudgets } = useContext(BudgetContext);
+
+  console.log(contextBudgets);
 
   useEffect(() => {
     const fetchBudgetsAndExpenses = async () => {
@@ -22,6 +29,7 @@ const ExpensePage = () => {
         const expensesData = expensesResponse.data;
 
         setExpenses(expensesData);
+        setContextExpenses(expensesData);
 
         const updatedBudgets = budgetsData.map((budget) => {
           const budgetExpenses = expensesData.filter(
@@ -41,15 +49,15 @@ const ExpensePage = () => {
       }
     };
     fetchBudgetsAndExpenses();
-  }, [currentProfile]);
+  }, [currentProfile, contextBudgets]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     const newExpense = {
       expenseName,
       amount: parseFloat(amount),
-      budgetId: budget.id,
-      budgetName: budget.name,
+      budgetId: budget.id || null,
+      budgetName: budget.name || null,
     };
 
     try {
@@ -58,15 +66,18 @@ const ExpensePage = () => {
         newExpense
       );
       setExpenses([...expenses, response.data]);
+      setContextExpenses([...expenses, response.data]);
 
-      // Update the amountLeft for the affected budget
-      setBudgetsWithAmountLeft((prevBudgets) =>
-        prevBudgets.map((b) =>
-          b.id === budget.id
-            ? { ...b, amountLeft: b.amountLeft - parseFloat(amount) }
-            : b
-        )
-      );
+      // Update the amountLeft for the affected budget (if a budget was selected)
+      if (budget.id) {
+        setBudgetsWithAmountLeft((prevBudgets) =>
+          prevBudgets.map((b) =>
+            b.id === budget.id
+              ? { ...b, amountLeft: b.amountLeft - parseFloat(amount) }
+              : b
+          )
+        );
+      }
 
       setExpenseName("");
       setAmount("");
@@ -89,15 +100,23 @@ const ExpensePage = () => {
       setExpenses(
         expenses.filter((expense) => expense.id !== parseInt(expenseId))
       );
+      setContextExpenses(
+        expenses.filter((expense) => expense.id !== parseInt(expenseId))
+      );
 
       // Update the amountLeft for the affected budget
-      setBudgetsWithAmountLeft((prevBudgets) =>
-        prevBudgets.map((b) =>
-          b.id === deletedExpense.budgetId
-            ? { ...b, amountLeft: b.amountLeft + deletedExpense.expenseAmount }
-            : b
-        )
-      );
+      if (deletedExpense.budgetId) {
+        setBudgetsWithAmountLeft((prevBudgets) =>
+          prevBudgets.map((b) =>
+            b.id === deletedExpense.budgetId
+              ? {
+                  ...b,
+                  amountLeft: b.amountLeft + deletedExpense.expenseAmount,
+                }
+              : b
+          )
+        );
+      }
     } catch (error) {
       console.error("Error Deleting expense", error);
     }
@@ -125,6 +144,10 @@ const ExpensePage = () => {
         expenses.map((e) => (e.id === expenseId ? response.data : e))
       );
 
+      setContextExpenses(
+        expenses.map((e) => (e.id === expenseId ? response.data : e))
+      );
+
       // Update amountLeft for both old and new budgets
       setBudgetsWithAmountLeft((prevBudgets) =>
         prevBudgets.map((b) => {
@@ -148,7 +171,7 @@ const ExpensePage = () => {
   };
 
   return (
-    <div>
+    <div className="create-expense-box">
       <h2>Add Expenses</h2>
       <form onSubmit={handleSubmit}>
         <input
@@ -169,15 +192,14 @@ const ExpensePage = () => {
           value={budget.id}
           onChange={(e) =>
             setBudget({
-              id: parseInt(e.target.value),
+              id: e.target.value ? parseInt(e.target.value) : "",
               name: e.target.options[e.target.selectedIndex].text.split(
                 " ("
               )[0],
             })
           }
-          required
         >
-          <option value="">Select a budget</option>
+          <option value="">No Budget</option>
           {budgetsWithAmountLeft.map((budget) => (
             <option key={budget.id} value={budget.id}>
               {budget.budgetName} (Amount Left: ${budget.amountLeft.toFixed(2)})
@@ -186,21 +208,22 @@ const ExpensePage = () => {
         </select>
         <button type="submit">Add Expense</button>
       </form>
-      <ul>
+      <div className="expenses-container">
         {expenses.map((expense) => (
-          <li key={`${expense.id}-${expense.expenseAmount}`}>
+          <div key={`${expense.id}`} className="expense">
             Expense Name: {expense.expenseName} - Expense Amount: $
             {expense.expenseAmount} - Budget:
             <select
-              value={expense.budgetId}
+              value={expense.budgetId || ""}
               onChange={(e) =>
                 handleUpdateExpenseBudget(
                   expense.id,
-                  parseInt(e.target.value),
+                  e.target.value ? parseInt(e.target.value) : null,
                   e.target.options[e.target.selectedIndex].text.split(" (")[0]
                 )
               }
             >
+              <option value="">No Budget</option>
               {budgetsWithAmountLeft.map((budget) => (
                 <option key={budget.id} value={budget.id}>
                   {budget.budgetName} (Amount Left: $
@@ -209,9 +232,9 @@ const ExpensePage = () => {
               ))}
             </select>
             <button onClick={() => handleDelete(expense.id)}>Delete</button>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };

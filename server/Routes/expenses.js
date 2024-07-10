@@ -7,19 +7,26 @@ app.post("/:currentProfile/", async (req, res) => {
   const { currentProfile } = req.params;
   const { expenseName, amount, budgetId, budgetName } = req.body;
   try {
+    let expenseData = {
+      expenseName,
+      expenseAmount: parseFloat(amount),
+      user: { connect: { username: currentProfile } },
+    };
+
+    if (budgetId) {
+      expenseData.budget = { connect: { id: parseInt(budgetId) } };
+      expenseData.budgetName = budgetName;
+    }
+
     const newExpense = await prisma.expense.create({
-      data: {
-        expenseName,
-        expenseAmount: parseFloat(amount),
-        user: { connect: { username: currentProfile } },
-        budget: { connect: { id: budgetId } },
-        budgetName,
-      },
+      data: expenseData,
     });
     res.status(201).json(newExpense);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error creating expense" });
+    res
+      .status(500)
+      .json({ message: "Error creating expense", error: error.message });
   }
 });
 

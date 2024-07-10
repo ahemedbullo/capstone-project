@@ -3,6 +3,8 @@ import { UserContext } from "../UserContext.js";
 import axios from "axios";
 import "./Styles/BudgetPage.css";
 import Modal from "./Modal.jsx";
+import { BudgetContext } from "../BudgetContext.js";
+import { ExpenseContext } from "../ExpenseContext.js";
 
 const BudgetPage = () => {
   const [budgets, setBudgets] = useState([]);
@@ -10,8 +12,11 @@ const BudgetPage = () => {
   const [budgetAmount, setBudgetAmount] = useState("");
   const { currentProfile } = useContext(UserContext);
   const [modalBudget, setModalBudget] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [budgetsWithExpenses, setBudgetsWithExpenses] = useState([]);
+
+  const { contextBudgets, setContextBudgets } = useContext(BudgetContext);
+
+  const { contextExpenses } = useContext(ExpenseContext);
 
   const handleBudgetNameChange = (event) => {
     setBudgetName(event.target.value);
@@ -53,7 +58,7 @@ const BudgetPage = () => {
       }
     };
     fetchBudgetsWithExpenses();
-  }, [currentProfile]);
+  }, [currentProfile, contextExpenses]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -71,6 +76,7 @@ const BudgetPage = () => {
       };
       setBudgetsWithExpenses([...budgetsWithExpenses, createdBudget]);
       setBudgets([...budgets, createdBudget]);
+      setContextBudgets([...budgets, createdBudget]);
       setBudgetName("");
       setBudgetAmount("");
     } catch (error) {
@@ -79,7 +85,6 @@ const BudgetPage = () => {
   };
 
   const handleViewDetails = (budget) => {
-    setIsModalOpen(true);
     setModalBudget(budget);
   };
 
@@ -92,6 +97,9 @@ const BudgetPage = () => {
         budgetsWithExpenses.filter((budget) => budget.id !== parseInt(budgetId))
       );
       setBudgets(budgets.filter((budget) => budget.id !== parseInt(budgetId)));
+      setContextBudgets(
+        budgets.filter((budget) => budget.id !== parseInt(budgetId))
+      );
     } catch (error) {
       console.error("Error Deleting Budget", error);
     }
@@ -103,8 +111,9 @@ const BudgetPage = () => {
         <h2>Create a New Budget</h2>
         <form onSubmit={handleSubmit}>
           <div>
-            <label>Budget Name</label>
+            <label>Budget Name:</label>
             <input
+              placeholder="Grocery, Night Out, Vacation, eg..."
               type="text"
               value={budgetName}
               onChange={handleBudgetNameChange}
@@ -112,8 +121,9 @@ const BudgetPage = () => {
             />
           </div>
           <div>
-            <label>Amount</label>
+            <label>Amount:</label>
             <input
+              placeholder="$"
               type="number"
               value={budgetAmount}
               onChange={handleBudgetAmountChange}
@@ -149,7 +159,7 @@ const BudgetPage = () => {
           currentProfile={currentProfile}
           updateExpenses={(newExpense) => {
             // Update the expenses in ExpensePage
-            // You might need to lift this state up or use a global state management solution
+            // might need to lift this state up or use a global state management solution
           }}
         />
       )}

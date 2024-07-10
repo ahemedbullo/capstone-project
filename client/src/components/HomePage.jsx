@@ -6,9 +6,14 @@ import BudgetPage from "./BudgetPage.jsx";
 import ExpensePage from "./ExpensePage.jsx";
 import "./Styles/HomePage.css";
 import Accounts from "./Accounts.jsx";
+import { BudgetContext } from "../BudgetContext.js";
+import { ExpenseContext } from "../ExpenseContext.js";
 
 const HomePage = () => {
   const { currentProfile, setCurrentProfile } = useContext(UserContext);
+
+  const [contextExpenses, setContextExpenses] = useState([]);
+  const [contextBudgets, setContextBudgets] = useState([]);
 
   const navigate = useNavigate();
 
@@ -21,42 +26,31 @@ const HomePage = () => {
 
   return (
     <>
-      <div className="homepage-container">
-        Welcome
-        <div className="content-container">
-          <Accounts />
-          <div className="box">
-            <BudgetPage />
+      <BudgetContext.Provider value={{ contextBudgets, setContextBudgets }}>
+        <ExpenseContext.Provider
+          value={{ contextExpenses, setContextExpenses }}
+        >
+          <header>
+            {" "}
+            <button onClick={handleLogout}>Logout</button>
+          </header>
+          <div className="homepage-container">
+            Welcome
+            <div className="content-container">
+              <Accounts />
+              <div className="box">
+                <BudgetPage />
+              </div>
+              <div className="box">
+                <ExpensePage />
+              </div>
+            </div>
+            <button onClick={handleLogout}>Logout</button>
           </div>
-          <div className="box">
-            <ExpensePage />
-          </div>
-        </div>
-        <button onClick={handleLogout}>Logout</button>
-      </div>
+        </ExpenseContext.Provider>
+      </BudgetContext.Provider>
     </>
   );
 };
 
 export default HomePage;
-{
-  /* <ExpenseContext.Provider
-value={{ existingExpenses, setExistingExpenses }}
->
-<BudgetContext.Provider value={{ existingBudgets, setExistingBudgets }}>
-  <button onClick={handleLogout}>Logout</button>
-  <div>Welcome </div>
-  <div>This will be the home page</div>
-  <Expense />
-  <Budget />
-  {existingExpenses ? (
-    <>
-      <p>Create you budgets</p>
-      <Budget />
-    </>
-  ) : (
-    <></>
-  )}
-</BudgetContext.Provider>
-</ExpenseContext.Provider> */
-}
