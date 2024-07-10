@@ -50,6 +50,24 @@ app.get("/:currentProfile/:budgetId", async (req, res) => {
   }
 });
 
+app.put("/:currentProfile/:expenseId", async (req, res) => {
+  const { currentProfile, expenseId } = req.params;
+  const { budgetId, budgetName } = req.body;
+  try {
+    const updatedExpense = await prisma.expense.update({
+      where: { id: parseInt(expenseId), userId: currentProfile },
+      data: {
+        budgetName: budgetName,
+        budget: { connect: { id: parseInt(budgetId) } },
+      },
+    });
+    res.status(200).json(updatedExpense);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to update expense budget" });
+  }
+});
+
 app.delete("/:currentProfile/:expenseId", async (req, res) => {
   const { currentProfile } = req.params;
   const { expenseId } = req.params;

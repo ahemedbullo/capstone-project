@@ -11,6 +11,7 @@ const BudgetPage = () => {
   const { currentProfile } = useContext(UserContext);
   const [modalBudget, setModalBudget] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [budgetsWithExpenses, setBudgetsWithExpenses] = useState([]);
 
   const handleBudgetNameChange = (event) => {
     setBudgetName(event.target.value);
@@ -21,30 +22,55 @@ const BudgetPage = () => {
   };
 
   useEffect(() => {
-    const fetchBudgets = async () => {
+    const fetchBudgetsWithExpenses = async () => {
       try {
-        const response = await axios.get(
+        const budgetsResponse = await axios.get(
           `http://localhost:3000/budgets/${currentProfile}`
         );
-        setBudgets(response.data);
+        const expensesResponse = await axios.get(
+          `http://localhost:3000/expenses/${currentProfile}`
+        );
+
+        const budgetsData = budgetsResponse.data;
+        const expensesData = expensesResponse.data;
+
+        const updatedBudgets = budgetsData.map((budget) => {
+          const budgetExpenses = expensesData.filter(
+            (expense) => expense.budgetId === budget.id
+          );
+          const totalExpenses = budgetExpenses.reduce(
+            (sum, expense) => sum + expense.expenseAmount,
+            0
+          );
+          const amountLeft = budget.budgetAmount - totalExpenses;
+          return { ...budget, amountLeft, totalExpenses };
+        });
+
+        setBudgetsWithExpenses(updatedBudgets);
+        setBudgets(updatedBudgets);
       } catch (error) {
-        console.error("Error fetching budgets:", error);
+        console.error("Error fetching budgets and expenses:", error);
       }
     };
-    fetchBudgets();
+    fetchBudgetsWithExpenses();
   }, [currentProfile]);
-  console.log(budgets);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const newBudget = { budgetName, budgetAmount };
+    const newBudget = { budgetName, budgetAmount: parseFloat(budgetAmount) };
 
     try {
       const response = await axios.post(
         `http://localhost:3000/budgets/${currentProfile}`,
         newBudget
       );
-      setBudgets([...budgets, response.data]);
+      const createdBudget = {
+        ...response.data,
+        amountLeft: response.data.budgetAmount,
+        totalExpenses: 0,
+      };
+      setBudgetsWithExpenses([...budgetsWithExpenses, createdBudget]);
+      setBudgets([...budgets, createdBudget]);
       setBudgetName("");
       setBudgetAmount("");
     } catch (error) {
@@ -61,6 +87,9 @@ const BudgetPage = () => {
     try {
       await axios.delete(
         `http://localhost:3000/budgets/${currentProfile}/${parseInt(budgetId)}`
+      );
+      setBudgetsWithExpenses(
+        budgetsWithExpenses.filter((budget) => budget.id !== parseInt(budgetId))
       );
       setBudgets(budgets.filter((budget) => budget.id !== parseInt(budgetId)));
     } catch (error) {
@@ -95,10 +124,12 @@ const BudgetPage = () => {
         </form>
       </div>
       <div className="budgets-container">
-        {budgets.map((budget) => (
+        {budgetsWithExpenses.map((budget) => (
           <div key={budget.id} className="budget">
             <h3>{budget.budgetName}</h3>
-            <p>Amount: ${budget.budgetAmount}</p>
+            <p>Total Budget: ${budget.budgetAmount}</p>
+            <p>Total Expenses: ${budget.totalExpenses.toFixed(2)}</p>
+            <p>Amount Left: ${budget.amountLeft.toFixed(2)}</p>
             <div className="buttons">
               <button
                 className="details-btn"

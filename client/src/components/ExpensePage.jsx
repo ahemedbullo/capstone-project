@@ -7,36 +7,40 @@ const ExpensePage = () => {
   const [expenseName, setExpenseName] = useState("");
   const [amount, setAmount] = useState("");
   const [budget, setBudget] = useState({ id: "", name: "" });
-  const [existingBudgets, setExistingBudgets] = useState([]);
+  const [budgetsWithAmountLeft, setBudgetsWithAmountLeft] = useState([]);
   const { currentProfile } = useContext(UserContext);
-  const [selectedBudget, setSelectedBudget] = useState("");
 
   useEffect(() => {
-    const fetchBudgets = async () => {
+    const fetchBudgetsAndExpenses = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:3000/budgets/${currentProfile}`
-        );
-        setExistingBudgets(response.data);
-      } catch (error) {
-        console.error("Error fetching budgets:", error);
-      }
-    };
-    fetchBudgets();
-  }, [currentProfile]);
+        const [budgetsResponse, expensesResponse] = await Promise.all([
+          axios.get(`http://localhost:3000/budgets/${currentProfile}`),
+          axios.get(`http://localhost:3000/expenses/${currentProfile}`),
+        ]);
 
-  useEffect(() => {
-    const fetchExpenses = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:3000/expenses/${currentProfile}`
-        );
-        setExpenses(response.data);
+        const budgetsData = budgetsResponse.data;
+        const expensesData = expensesResponse.data;
+
+        setExpenses(expensesData);
+
+        const updatedBudgets = budgetsData.map((budget) => {
+          const budgetExpenses = expensesData.filter(
+            (expense) => expense.budgetId === budget.id
+          );
+          const totalExpenses = budgetExpenses.reduce(
+            (sum, expense) => sum + expense.expenseAmount,
+            0
+          );
+          const amountLeft = budget.budgetAmount - totalExpenses;
+          return { ...budget, amountLeft };
+        });
+
+        setBudgetsWithAmountLeft(updatedBudgets);
       } catch (error) {
-        console.error("Error fetching expenses:", error);
+        console.error("Error fetching budgets and expenses:", error);
       }
     };
-    fetchExpenses();
+    fetchBudgetsAndExpenses();
   }, [currentProfile]);
 
   const handleSubmit = async (event) => {
@@ -54,6 +58,16 @@ const ExpensePage = () => {
         newExpense
       );
       setExpenses([...expenses, response.data]);
+
+      // Update the amountLeft for the affected budget
+      setBudgetsWithAmountLeft((prevBudgets) =>
+        prevBudgets.map((b) =>
+          b.id === budget.id
+            ? { ...b, amountLeft: b.amountLeft - parseFloat(amount) }
+            : b
+        )
+      );
+
       setExpenseName("");
       setAmount("");
       setBudget({ id: "", name: "" });
@@ -69,11 +83,67 @@ const ExpensePage = () => {
           expenseId
         )}`
       );
+      const deletedExpense = expenses.find(
+        (expense) => expense.id === parseInt(expenseId)
+      );
       setExpenses(
         expenses.filter((expense) => expense.id !== parseInt(expenseId))
       );
+
+      // Update the amountLeft for the affected budget
+      setBudgetsWithAmountLeft((prevBudgets) =>
+        prevBudgets.map((b) =>
+          b.id === deletedExpense.budgetId
+            ? { ...b, amountLeft: b.amountLeft + deletedExpense.expenseAmount }
+            : b
+        )
+      );
     } catch (error) {
       console.error("Error Deleting expense", error);
+    }
+  };
+
+  const handleUpdateExpenseBudget = async (
+    expenseId,
+    newBudgetId,
+    newBudgetName
+  ) => {
+    try {
+      const expenseToUpdate = expenses.find((e) => e.id === expenseId);
+      const updatedExpense = {
+        ...expenseToUpdate,
+        budgetId: newBudgetId,
+        budgetName: newBudgetName,
+      };
+
+      const response = await axios.put(
+        `http://localhost:3000/expenses/${currentProfile}/${expenseId}`,
+        updatedExpense
+      );
+
+      setExpenses(
+        expenses.map((e) => (e.id === expenseId ? response.data : e))
+      );
+
+      // Update amountLeft for both old and new budgets
+      setBudgetsWithAmountLeft((prevBudgets) =>
+        prevBudgets.map((b) => {
+          if (b.id === expenseToUpdate.budgetId) {
+            return {
+              ...b,
+              amountLeft: b.amountLeft + expenseToUpdate.expenseAmount,
+            };
+          } else if (b.id === newBudgetId) {
+            return {
+              ...b,
+              amountLeft: b.amountLeft - expenseToUpdate.expenseAmount,
+            };
+          }
+          return b;
+        })
+      );
+    } catch (error) {
+      console.error("Error updating expense budget:", error);
     }
   };
 
@@ -93,20 +163,24 @@ const ExpensePage = () => {
           placeholder="Amount"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
+          required
         />
         <select
           value={budget.id}
           onChange={(e) =>
             setBudget({
               id: parseInt(e.target.value),
-              name: e.target.options[e.target.selectedIndex].text,
+              name: e.target.options[e.target.selectedIndex].text.split(
+                " ("
+              )[0],
             })
           }
+          required
         >
           <option value="">Select a budget</option>
-          {existingBudgets.map((budget) => (
+          {budgetsWithAmountLeft.map((budget) => (
             <option key={budget.id} value={budget.id}>
-              {budget.budgetName}
+              {budget.budgetName} (Amount Left: ${budget.amountLeft.toFixed(2)})
             </option>
           ))}
         </select>
@@ -114,9 +188,26 @@ const ExpensePage = () => {
       </form>
       <ul>
         {expenses.map((expense) => (
-          <li key={`${expense.id}-${expense.amount}`}>
+          <li key={`${expense.id}-${expense.expenseAmount}`}>
             Expense Name: {expense.expenseName} - Expense Amount: $
-            {expense.expenseAmount} - Budget: {expense.budgetName}
+            {expense.expenseAmount} - Budget:
+            <select
+              value={expense.budgetId}
+              onChange={(e) =>
+                handleUpdateExpenseBudget(
+                  expense.id,
+                  parseInt(e.target.value),
+                  e.target.options[e.target.selectedIndex].text.split(" (")[0]
+                )
+              }
+            >
+              {budgetsWithAmountLeft.map((budget) => (
+                <option key={budget.id} value={budget.id}>
+                  {budget.budgetName} (Amount Left: $
+                  {budget.amountLeft.toFixed(2)})
+                </option>
+              ))}
+            </select>
             <button onClick={() => handleDelete(expense.id)}>Delete</button>
           </li>
         ))}
