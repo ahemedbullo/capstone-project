@@ -18,6 +18,8 @@ model User {
   password String
   budgets   Budget[]
   expenses Expense []
+  plaidAccessToken String?
+  plaidItem String?
 }
 
 model Budget {

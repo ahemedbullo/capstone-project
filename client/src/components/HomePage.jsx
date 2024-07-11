@@ -11,10 +11,8 @@ import { ExpenseContext } from "../ExpenseContext.js";
 
 const HomePage = () => {
   const { currentProfile, setCurrentProfile } = useContext(UserContext);
-
   const [contextExpenses, setContextExpenses] = useState([]);
   const [contextBudgets, setContextBudgets] = useState([]);
-
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -25,31 +23,33 @@ const HomePage = () => {
   };
 
   return (
-    <>
-      <BudgetContext.Provider value={{ contextBudgets, setContextBudgets }}>
-        <ExpenseContext.Provider
-          value={{ contextExpenses, setContextExpenses }}
-        >
-          <header>
-            {" "}
-            <button onClick={handleLogout}>Logout</button>
+    <BudgetContext.Provider value={{ contextBudgets, setContextBudgets }}>
+      <ExpenseContext.Provider value={{ contextExpenses, setContextExpenses }}>
+        <div className="homepage">
+          <header className="header">
+            <h1>Welcome, {currentProfile}</h1>
+            <button className="logout-btn" onClick={handleLogout}>
+              Logout
+            </button>
           </header>
-          <div className="homepage-container">
-            Welcome
-            <div className="content-container">
+          <main className="main-content">
+            <aside className="sidebar">
               <Accounts />
-              <div className="box">
+            </aside>
+            <section className="budget-expense-container">
+              <div className="card budget-card">
+                <h2>Budgets</h2>
                 <BudgetPage />
               </div>
-              <div className="box">
+              <div className="card expense-card">
+                <h2>Expenses</h2>
                 <ExpensePage />
               </div>
-            </div>
-            <button onClick={handleLogout}>Logout</button>
-          </div>
-        </ExpenseContext.Provider>
-      </BudgetContext.Provider>
-    </>
+            </section>
+          </main>
+        </div>
+      </ExpenseContext.Provider>
+    </BudgetContext.Provider>
   );
 };
 

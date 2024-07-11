@@ -13,52 +13,43 @@ const BudgetPage = () => {
   const { currentProfile } = useContext(UserContext);
   const [modalBudget, setModalBudget] = useState(null);
   const [budgetsWithExpenses, setBudgetsWithExpenses] = useState([]);
-
   const { contextBudgets, setContextBudgets } = useContext(BudgetContext);
-
   const { contextExpenses } = useContext(ExpenseContext);
 
-  const handleBudgetNameChange = (event) => {
-    setBudgetName(event.target.value);
-  };
-
-  const handleBudgetAmountChange = (event) => {
-    setBudgetAmount(event.target.value);
-  };
-
   useEffect(() => {
-    const fetchBudgetsWithExpenses = async () => {
-      try {
-        const budgetsResponse = await axios.get(
-          `http://localhost:3000/budgets/${currentProfile}`
-        );
-        const expensesResponse = await axios.get(
-          `http://localhost:3000/expenses/${currentProfile}`
-        );
-
-        const budgetsData = budgetsResponse.data;
-        const expensesData = expensesResponse.data;
-
-        const updatedBudgets = budgetsData.map((budget) => {
-          const budgetExpenses = expensesData.filter(
-            (expense) => expense.budgetId === budget.id
-          );
-          const totalExpenses = budgetExpenses.reduce(
-            (sum, expense) => sum + expense.expenseAmount,
-            0
-          );
-          const amountLeft = budget.budgetAmount - totalExpenses;
-          return { ...budget, amountLeft, totalExpenses };
-        });
-
-        setBudgetsWithExpenses(updatedBudgets);
-        setBudgets(updatedBudgets);
-      } catch (error) {
-        console.error("Error fetching budgets and expenses:", error);
-      }
-    };
     fetchBudgetsWithExpenses();
   }, [currentProfile, contextExpenses]);
+
+  const fetchBudgetsWithExpenses = async () => {
+    try {
+      const budgetsResponse = await axios.get(
+        `http://localhost:3000/budgets/${currentProfile}`
+      );
+      const expensesResponse = await axios.get(
+        `http://localhost:3000/expenses/${currentProfile}`
+      );
+
+      const budgetsData = budgetsResponse.data;
+      const expensesData = expensesResponse.data;
+
+      const updatedBudgets = budgetsData.map((budget) => {
+        const budgetExpenses = expensesData.filter(
+          (expense) => expense.budgetId === budget.id
+        );
+        const totalExpenses = budgetExpenses.reduce(
+          (sum, expense) => sum + expense.expenseAmount,
+          0
+        );
+        const amountLeft = budget.budgetAmount - totalExpenses;
+        return { ...budget, amountLeft, totalExpenses };
+      });
+
+      setBudgetsWithExpenses(updatedBudgets);
+      setBudgets(updatedBudgets);
+    } catch (error) {
+      console.error("Error fetching budgets and expenses:", error);
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -84,69 +75,65 @@ const BudgetPage = () => {
     }
   };
 
-  const handleViewDetails = (budget) => {
-    setModalBudget(budget);
-  };
-
   const handleDelete = async (budgetId) => {
     try {
       await axios.delete(
         `http://localhost:3000/budgets/${currentProfile}/${parseInt(budgetId)}`
       );
-      setBudgetsWithExpenses(
-        budgetsWithExpenses.filter((budget) => budget.id !== parseInt(budgetId))
+      const updatedBudgets = budgetsWithExpenses.filter(
+        (budget) => budget.id !== parseInt(budgetId)
       );
-      setBudgets(budgets.filter((budget) => budget.id !== parseInt(budgetId)));
-      setContextBudgets(
-        budgets.filter((budget) => budget.id !== parseInt(budgetId))
-      );
+      setBudgetsWithExpenses(updatedBudgets);
+      setBudgets(updatedBudgets);
+      setContextBudgets(updatedBudgets);
     } catch (error) {
       console.error("Error Deleting Budget", error);
     }
   };
 
   return (
-    <>
-      <div className="create-budget-box">
-        <h2>Create a New Budget</h2>
+    <div className="budget-page">
+      <div className="budget-form">
+        <h3>Create a New Budget</h3>
         <form onSubmit={handleSubmit}>
-          <div>
-            <label>Budget Name:</label>
-            <input
-              placeholder="Grocery, Night Out, Vacation, eg..."
-              type="text"
-              value={budgetName}
-              onChange={handleBudgetNameChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Amount:</label>
-            <input
-              placeholder="$"
-              type="number"
-              value={budgetAmount}
-              onChange={handleBudgetAmountChange}
-              required
-            />
-          </div>
-          <button type="submit">Create New Budget</button>
+          <input
+            type="text"
+            placeholder="Budget Name"
+            value={budgetName}
+            onChange={(e) => setBudgetName(e.target.value)}
+            required
+          />
+          <input
+            type="number"
+            placeholder="Budget Amount"
+            value={budgetAmount}
+            onChange={(e) => setBudgetAmount(e.target.value)}
+            required
+          />
+          <button type="submit">Create Budget</button>
         </form>
       </div>
-      <div className="budgets-container">
+      <div className="budget-list">
         {budgetsWithExpenses.map((budget) => (
-          <div key={budget.id} className="budget">
-            <h3>{budget.budgetName}</h3>
-            <p>Total Budget: ${budget.budgetAmount}</p>
-            <p>Total Expenses: ${budget.totalExpenses.toFixed(2)}</p>
-            <p>Amount Left: ${budget.amountLeft.toFixed(2)}</p>
-            <div className="buttons">
-              <button
-                className="details-btn"
-                onClick={() => handleViewDetails(budget)}
-              >
-                View Budget Details
-              </button>
+          <div key={budget.id} className="budget-item">
+            <h4>{budget.budgetName}</h4>
+            <div className="budget-details">
+              <p>Total: ${budget.budgetAmount}</p>
+              <p>Spent: ${budget.totalExpenses.toFixed(2)}</p>
+              <p>Left: ${budget.amountLeft.toFixed(2)}</p>
+            </div>
+            <div className="budget-progress">
+              <div
+                className="progress-bar"
+                style={{
+                  width: `${
+                    (budget.totalExpenses / budget.budgetAmount) * 100
+                  }%`,
+                }}
+              ></div>
+            </div>
+            <div className="budget-actions">
+              <button onClick={() => setModalBudget(budget)}>Details</button>
               <button onClick={() => handleDelete(budget.id)}>Delete</button>
             </div>
           </div>
@@ -157,13 +144,9 @@ const BudgetPage = () => {
           budget={modalBudget}
           onClose={() => setModalBudget(null)}
           currentProfile={currentProfile}
-          updateExpenses={(newExpense) => {
-            // Update the expenses in ExpensePage
-            // might need to lift this state up or use a global state management solution
-          }}
         />
       )}
-    </>
+    </div>
   );
 };
 

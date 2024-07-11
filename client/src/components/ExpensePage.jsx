@@ -15,8 +15,6 @@ const ExpensePage = () => {
   const { currentProfile } = useContext(UserContext);
   const { contextBudgets } = useContext(BudgetContext);
 
-  console.log(contextBudgets);
-
   useEffect(() => {
     const fetchBudgetsAndExpenses = async () => {
       try {
