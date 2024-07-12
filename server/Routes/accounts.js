@@ -39,44 +39,40 @@ app.post("/create_link_token/:currentProfile", async (req, res) => {
   }
 });
 
-app.post(
-  "/exchange_public_token/:currentProfile",
-  async function (req, res, next) {
-    const { currentProfile } = req.params;
-    const { publicToken } = req.body;
+app.post("/exchange_public_token/:currentProfile", async function (req, res) {
+  const { currentProfile } = req.params;
+  const { public_token } = req.body;
 
-    console.log(req.body);
-    try {
-      const response = await client.itemPublicTokenExchange({
-        public_token: publicToken,
-      });
+  try {
+    const response = await client.itemPublicTokenExchange({
+      public_token: public_token,
+    });
+    console.log(response);
+    // These values should be saved to a persistent database and
+    // associated with the currently signed-in user
+    const accessToken = response.data.access_token;
+    const itemID = response.data.item_id;
 
-      // These values should be saved to a persistent database and
-      // associated with the currently signed-in user
-      const accessToken = response.data.access_token;
-      const itemID = response.data.item_id;
+    await prisma.user.update({
+      where: { username: currentProfile },
+      data: {
+        plaidAccessToken: accessToken,
+        plaidItem: itemID,
+      },
+    });
 
-      await prisma.user.update({
-        where: { username: currentProfile },
-        data: {
-          plaidAccessToken: accessToken,
-          plaidItem: itemID,
-        },
-      });
+    const balanceResponse = await client.accountsBalanceGet({
+      access_token: accessToken,
+    });
 
-      /*    const balanceResponse = await client.accountsBalanceGet({
-        access_token: accessToken,
-      }); */
+    res.json({ success: true, accounts });
 
-      //  res.json({ success: true, accounts });
-
-      res.json({ public_token_exchange: "complete" });
-    } catch (error) {
-      // handle error
-      console.error("Error exchanging public token: ", error);
-      res.status(500).json({ error: "Failed to exchange public token" });
-    }
+    res.json({ public_token_exchange: "complete" });
+  } catch (error) {
+    // handle error
+    console.error("Error exchanging public token: ", error);
+    res.status(500).json({ error: "Failed to exchange public token" });
   }
-);
+});
 
 module.exports = app;

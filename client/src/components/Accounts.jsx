@@ -29,7 +29,7 @@ const Accounts = () => {
         console.log("Public token recieved: ", public_token);
         const response = await axios.post(
           `http://localhost:3000/accounts/exchange_public_token/${currentProfile}`,
-          { public_token }
+          { public_token: public_token }
         );
         console.log("Plaid account linked successfully:", response.data);
         // You can add logic here to update the UI or fetch updated budget information
