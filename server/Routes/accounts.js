@@ -8,40 +8,44 @@ const configuration = new Configuration({
   basePath: PlaidEnvironments.sandbox,
   baseOptions: {
     headers: {
-      "PLAID-CLIENT-ID": CLIENT_ID,
-      "PLAID-SECRET": SECRET,
+      "PLAID-CLIENT-ID": process.env.PLAID_CLIENT_ID,
+      "PLAID-SECRET": process.env.PLAID_SECRET,
     },
   },
 });
 
-app.post("/create_link_token", async function (req, res) {
+const client = new PlaidApi(configuration);
+app.post("/create_link_token/:currentProfile", async (req, res) => {
   // Get the client_user_id by searching for the current user
-  // const user = await User.find(...);
-  const clientUserId = user.id;
+  const { currentProfile } = req.params;
   const request = {
     user: {
       // This should correspond to a unique id for the current user.
-      client_user_id: clientUserId,
+      client_user_id: currentProfile,
     },
     client_name: "Plaid Test App",
     products: ["auth"],
     language: "en",
-    webhook: "https://webhook.example.com",
-    redirect_uri: "https://domainname.com/oauth-page.html",
+    // redirect_uri: "http://localhost:5173/",
     country_codes: ["US"],
   };
   try {
     const createTokenResponse = await client.linkTokenCreate(request);
-    response.json(createTokenResponse.data);
+    res.json(createTokenResponse.data);
   } catch (error) {
     // handle error
+    console.error("Error creating Link Token: ", error);
+    res.status(500).json({ error: "Failed to create link Token" });
   }
 });
 
 app.post(
-  "/api/exchange_public_token",
-  async function (request, response, next) {
-    const publicToken = request.body.public_token;
+  "/exchange_public_token/:currentProfile",
+  async function (req, res, next) {
+    const { currentProfile } = req.params;
+    const { publicToken } = req.body;
+
+    console.log(req.body);
     try {
       const response = await client.itemPublicTokenExchange({
         public_token: publicToken,
@@ -52,9 +56,25 @@ app.post(
       const accessToken = response.data.access_token;
       const itemID = response.data.item_id;
 
+      await prisma.user.update({
+        where: { username: currentProfile },
+        data: {
+          plaidAccessToken: accessToken,
+          plaidItem: itemID,
+        },
+      });
+
+      /*    const balanceResponse = await client.accountsBalanceGet({
+        access_token: accessToken,
+      }); */
+
+      //  res.json({ success: true, accounts });
+
       res.json({ public_token_exchange: "complete" });
     } catch (error) {
       // handle error
+      console.error("Error exchanging public token: ", error);
+      res.status(500).json({ error: "Failed to exchange public token" });
     }
   }
 );
