@@ -1,7 +1,6 @@
 const { Configuration, PlaidApi, PlaidEnvironments } = require("plaid");
 const { PrismaClient } = require("@prisma/client");
 const express = require("express");
-const { connect } = require("./accounts");
 const app = express.Router();
 const prisma = new PrismaClient();
 

@@ -43,7 +43,6 @@ const Accounts = () => {
           `http://localhost:3000/accounts/exchange_public_token/${currentProfile}`,
           { public_token: public_token }
         );
-        console.log("Plaid account linked successfully:", response.data);
         fetchAccounts();
       } catch (error) {
         console.error("Error exchanging public token:", error);
