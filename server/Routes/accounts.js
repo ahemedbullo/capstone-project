@@ -1,6 +1,7 @@
 const { Configuration, PlaidApi, PlaidEnvironments } = require("plaid");
 const { PrismaClient } = require("@prisma/client");
 const express = require("express");
+const { connect } = require("./accounts");
 const app = express.Router();
 const prisma = new PrismaClient();
 
@@ -26,7 +27,6 @@ app.post("/create_link_token/:currentProfile", async (req, res) => {
     client_name: "Plaid Test App",
     products: ["auth"],
     language: "en",
-    // redirect_uri: "http://localhost:5173/",
     country_codes: ["US"],
   };
   try {
@@ -44,14 +44,12 @@ app.post("/exchange_public_token/:currentProfile", async function (req, res) {
   const { public_token } = req.body;
 
   try {
-    const response = await client.itemPublicTokenExchange({
+    const exchangeResponse = await client.itemPublicTokenExchange({
       public_token: public_token,
     });
-    console.log(response);
-    // These values should be saved to a persistent database and
-    // associated with the currently signed-in user
-    const accessToken = response.data.access_token;
-    const itemID = response.data.item_id;
+
+    const accessToken = exchangeResponse.data.access_token;
+    const itemID = exchangeResponse.data.item_id;
 
     await prisma.user.update({
       where: { username: currentProfile },
@@ -64,14 +62,63 @@ app.post("/exchange_public_token/:currentProfile", async function (req, res) {
     const balanceResponse = await client.accountsBalanceGet({
       access_token: accessToken,
     });
+    const accounts = balanceResponse.data.accounts;
+
+    for (const account of accounts) {
+      await prisma.account.upsert({
+        where: {
+          username_accountId: {
+            username: currentProfile,
+            accountId: account.account_id,
+          },
+        },
+        update: {
+          name: account.name,
+          type: account.type,
+          balance: account.balances.current,
+          lastUpdated: new Date(),
+        },
+        create: {
+          username: currentProfile,
+          accountId: account.account_id,
+          name: account.name,
+          type: account.type,
+          balance: account.balances.current,
+          user: {
+            connect: { username: currentProfile },
+          },
+        },
+      });
+    }
 
     res.json({ success: true, accounts });
-
-    res.json({ public_token_exchange: "complete" });
   } catch (error) {
-    // handle error
-    console.error("Error exchanging public token: ", error);
-    res.status(500).json({ error: "Failed to exchange public token" });
+    console.error(
+      "Error exchanging public token or fetching balances: ",
+      error
+    );
+    res
+      .status(500)
+      .json({ error: "Failed to exchange public token or fetch balances" });
+  }
+});
+
+app.get("/balances/:currentProfile", async (req, res) => {
+  const { currentProfile } = req.params;
+  try {
+    const accounts = await prisma.account.findMany({
+      where: { username: currentProfile },
+      orderBy: { lastUpdated: "desc" },
+    });
+
+    if (accounts.length === 0) {
+      return res.status(400).json({ error: "No linked accounts found" });
+    }
+
+    res.json({ success: true, accounts });
+  } catch (error) {
+    console.error("Error fetching balances: ", error);
+    res.status(500).json({ error: "Failed to get balances" });
   }
 });
 
