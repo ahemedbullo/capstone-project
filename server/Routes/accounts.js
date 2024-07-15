@@ -165,7 +165,6 @@ app.post("/update_balances/:currentProfile", async (req, res) => {
   }
 });
 
-// Add this new endpoint for deleting an account
 app.delete("/delete_account/:currentProfile/:accountId", async (req, res) => {
   const { currentProfile, accountId } = req.params;
   try {
@@ -182,6 +181,23 @@ app.delete("/delete_account/:currentProfile/:accountId", async (req, res) => {
   } catch (error) {
     console.error("Error deleting account: ", error);
     res.status(500).json({ error: "Failed to delete account" });
+  }
+});
+
+app.put("/rename_account/:currentProfile/:accountId", async (req, res) => {
+  const { currentProfile, accountId } = req.params;
+  const { newName } = req.body;
+  try {
+    const updatedAccount = await prisma.account.update({
+      where: {
+        username_accountId: { username: currentProfile, accountId: accountId },
+      },
+      data: { name: newName },
+    });
+    res.json({ success: true, account: updatedAccount });
+  } catch (error) {
+    console.error("Error renaming account: ", error);
+    res.status(500).json({ error: "Failed to rename account" });
   }
 });
 
