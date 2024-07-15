@@ -121,4 +121,68 @@ app.get("/balances/:currentProfile", async (req, res) => {
   }
 });
 
+app.post("/update_balances/:currentProfile", async (req, res) => {
+  const { currentProfile } = req.params;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { username: currentProfile },
+      select: { plaidAccessToken: true },
+    });
+
+    if (!user || !user.plaidAccessToken) {
+      return res.status(400).json({ error: "No linked accounts found" });
+    }
+
+    const balanceResponse = await client.accountsBalanceGet({
+      access_token: user.plaidAccessToken,
+    });
+    const accounts = balanceResponse.data.accounts;
+
+    for (const account of accounts) {
+      await prisma.account.update({
+        where: {
+          username_accountId: {
+            username: currentProfile,
+            accountId: account.account_id,
+          },
+        },
+        data: {
+          balance: account.balances.current,
+          lastUpdated: new Date(),
+        },
+      });
+    }
+
+    const updatedAccounts = await prisma.account.findMany({
+      where: { username: currentProfile },
+      orderBy: { lastUpdated: "desc" },
+    });
+
+    res.json({ success: true, accounts: updatedAccounts });
+  } catch (error) {
+    console.error("Error updating balances: ", error);
+    res.status(500).json({ error: "Failed to update balances" });
+  }
+});
+
+// Add this new endpoint for deleting an account
+app.delete("/delete_account/:currentProfile/:accountId", async (req, res) => {
+  const { currentProfile, accountId } = req.params;
+  try {
+    await prisma.account.delete({
+      where: {
+        username_accountId: {
+          username: currentProfile,
+          accountId: accountId,
+        },
+      },
+    });
+
+    res.json({ success: true, message: "Account deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting account: ", error);
+    res.status(500).json({ error: "Failed to delete account" });
+  }
+});
+
 module.exports = app;

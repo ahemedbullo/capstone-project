@@ -7,6 +7,7 @@ const Accounts = () => {
   const { currentProfile } = useContext(UserContext);
   const [linkToken, setLinkToken] = useState(null);
   const [accounts, setAccounts] = useState([]);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     fetchLinkToken();
@@ -35,11 +36,36 @@ const Accounts = () => {
     }
   };
 
+  const updateBalances = async () => {
+    setIsUpdating(true);
+    try {
+      const response = await axios.post(
+        `http://localhost:3000/accounts/update_balances/${currentProfile}`
+      );
+      setAccounts(response.data.accounts);
+    } catch (error) {
+      console.error("Error updating balances:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const deleteAccount = async (accountId) => {
+    try {
+      await axios.delete(
+        `http://localhost:3000/accounts/delete_account/${currentProfile}/${accountId}`
+      );
+      fetchAccounts(); // Refresh the account list after deletion
+    } catch (error) {
+      console.error("Error deleting account:", error);
+    }
+  };
+
   const { open, ready } = usePlaidLink({
     token: linkToken,
     onSuccess: async (public_token, metadata) => {
       try {
-        const response = await axios.post(
+        await axios.post(
           `http://localhost:3000/accounts/exchange_public_token/${currentProfile}`,
           { public_token: public_token }
         );
@@ -68,6 +94,15 @@ const Accounts = () => {
             ? "Link Another Account"
             : "Link Your First Account"}
         </button>
+        {accounts.length > 0 && (
+          <button
+            onClick={updateBalances}
+            disabled={isUpdating}
+            className="update-balances-btn"
+          >
+            {isUpdating ? "Updating..." : "Update Balances"}
+          </button>
+        )}
       </div>
       {accounts.length > 0 ? (
         <div className="accounts-list">
@@ -80,6 +115,12 @@ const Accounts = () => {
               <p className="last-updated">
                 Last Updated: {new Date(account.lastUpdated).toLocaleString()}
               </p>
+              <button
+                onClick={() => deleteAccount(account.accountId)}
+                className="delete-account-btn"
+              >
+                Delete Account
+              </button>
             </div>
           ))}
         </div>
