@@ -196,7 +196,7 @@ const Accounts = () => {
         </div>
       ) : (
         <p>
-          You haven't linked any accounts yet. Click the button to get started{" "}
+          You haven't linked any accounts yet. Click the button to get started
         </p>
       )}
     </div>
