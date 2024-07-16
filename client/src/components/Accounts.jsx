@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { UserContext } from "../UserContext.js";
 import axios from "axios";
 import { usePlaidLink } from "react-plaid-link";
+import { AccountsContext } from "../AccountsContext.js";
 
 const Accounts = () => {
   const { currentProfile } = useContext(UserContext);
@@ -10,6 +11,7 @@ const Accounts = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
   const [editName, setEditName] = useState("");
+  const { contextAccounts, setContextAccounts } = useContext(AccountsContext);
 
   useEffect(() => {
     fetchLinkToken();
@@ -32,6 +34,7 @@ const Accounts = () => {
       const response = await axios.get(
         `http://localhost:3000/accounts/balances/${currentProfile}`
       );
+      setContextAccounts(response.data.accounts);
       setAccounts(response.data.accounts);
     } catch (error) {
       console.error("Error fetching accounts:", error);
@@ -45,6 +48,7 @@ const Accounts = () => {
         `http://localhost:3000/accounts/update_balances/${currentProfile}`
       );
       setAccounts(response.data.accounts);
+      setContextAccounts(response.data.accounts);
     } catch (error) {
       console.error("Error updating balances:", error);
     } finally {
@@ -75,6 +79,13 @@ const Accounts = () => {
         { newName: editName }
       );
       setAccounts(
+        accounts.map((account) =>
+          account.accountId === accountId
+            ? { ...account, name: editName }
+            : account
+        )
+      );
+      setContextAccounts(
         accounts.map((account) =>
           account.accountId === accountId
             ? { ...account, name: editName }

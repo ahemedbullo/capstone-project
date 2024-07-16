@@ -8,11 +8,13 @@ import "./Styles/HomePage.css";
 import Accounts from "./Accounts.jsx";
 import { BudgetContext } from "../BudgetContext.js";
 import { ExpenseContext } from "../ExpenseContext.js";
+import { AccountsContext } from "../AccountsContext.js";
 
 const HomePage = () => {
   const { currentProfile, setCurrentProfile } = useContext(UserContext);
   const [contextExpenses, setContextExpenses] = useState([]);
   const [contextBudgets, setContextBudgets] = useState([]);
+  const [contextAccounts, setContextAccounts] = useState([]);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -25,29 +27,33 @@ const HomePage = () => {
   return (
     <BudgetContext.Provider value={{ contextBudgets, setContextBudgets }}>
       <ExpenseContext.Provider value={{ contextExpenses, setContextExpenses }}>
-        <div className="homepage">
-          <header className="header">
-            <h1>Welcome, {currentProfile}</h1>
-            <button className="logout-btn" onClick={handleLogout}>
-              Logout
-            </button>
-          </header>
-          <main className="main-content">
-            <aside className="sidebar">
-              <Accounts />
-            </aside>
-            <section className="budget-expense-container">
-              <div className="card budget-card">
-                <h2>Budgets</h2>
-                <BudgetPage />
-              </div>
-              <div className="card expense-card">
-                <h2>Expenses</h2>
-                <ExpensePage />
-              </div>
-            </section>
-          </main>
-        </div>
+        <AccountsContext.Provider
+          value={{ contextAccounts, setContextAccounts }}
+        >
+          <div className="homepage">
+            <header className="header">
+              <h1>Welcome, {currentProfile}</h1>
+              <button className="logout-btn" onClick={handleLogout}>
+                Logout
+              </button>
+            </header>
+            <main className="main-content">
+              <aside className="sidebar">
+                <Accounts />
+              </aside>
+              <section className="budget-expense-container">
+                <div className="card budget-card">
+                  <h2>Budgets</h2>
+                  <BudgetPage />
+                </div>
+                <div className="card expense-card">
+                  <h2>Expenses</h2>
+                  <ExpensePage />
+                </div>
+              </section>
+            </main>
+          </div>
+        </AccountsContext.Provider>
       </ExpenseContext.Provider>
     </BudgetContext.Provider>
   );

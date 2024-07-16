@@ -4,6 +4,7 @@ import axios from "axios";
 import "./Styles/ExpensePage.css";
 import { BudgetContext } from "../BudgetContext.js";
 import { ExpenseContext } from "../ExpenseContext.js";
+import { AccountsContext } from "../AccountsContext.js";
 
 const ExpensePage = () => {
   const [expenses, setExpenses] = useState([]);
@@ -14,6 +15,7 @@ const ExpensePage = () => {
   const { contextExpenses, setContextExpenses } = useContext(ExpenseContext);
   const { currentProfile } = useContext(UserContext);
   const { contextBudgets } = useContext(BudgetContext);
+  const { contextAccounts } = useContext(AccountsContext); //todo use this to get total balance
 
   useEffect(() => {
     const fetchBudgetsAndExpenses = async () => {
