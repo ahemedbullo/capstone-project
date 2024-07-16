@@ -54,7 +54,7 @@ const ExpensePage = () => {
       }
     };
     fetchBudgetsAndExpenses();
-  }, [currentProfile, contextBudgets, contextExpenses]);
+  }, [currentProfile, contextBudgets]);
 
   const handleExpenseChange = (expenseId, field, value) => {
     setNewExpenses(
@@ -263,9 +263,9 @@ const ExpensePage = () => {
   return (
     <div className="create-expense-box">
       <h2>Add Expenses</h2>
-      <form onSubmit={handleSubmit} className="expense-form">
+      <form onSubmit={handleSubmit}>
         {newExpenses.map((expense) => (
-          <div key={expense.expenseId} className="expense-input-group">
+          <div key={expense.expenseId}>
             <input
               type="text"
               placeholder="Expense Name"
@@ -314,18 +314,16 @@ const ExpensePage = () => {
             </button>
           </div>
         ))}
-        <div className="form-buttons">
-          <button type="button" onClick={addExpenseInput}>
-            Add Another Expense
-          </button>
-          <button type="submit">Add Expenses</button>
-        </div>
+        <button type="button" onClick={addExpenseInput}>
+          Add Another Expense
+        </button>
+        <button type="submit">Add Expenses</button>
       </form>
       <div className="expenses-container">
         {expenses.map((expense) => (
           <div key={expense.id} className="expense">
             {editingExpenseId === expense.id ? (
-              <div className="edit-expense-form">
+              <>
                 <input
                   type="text"
                   value={expense.expenseName}
@@ -356,44 +354,35 @@ const ExpensePage = () => {
                 <button onClick={() => setEditingExpenseId(null)}>
                   Cancel
                 </button>
-              </div>
+              </>
             ) : (
               <>
-                <div className="expense-details">
-                  <span>Expense Name: {expense.expenseName}</span>
-                  <span>Amount: ${expense.expenseAmount}</span>
-                  <span>
-                    Budget:
-                    <select
-                      value={expense.budgetId || ""}
-                      onChange={(e) =>
-                        handleUpdateExpenseBudget(
-                          expense.id,
-                          e.target.value,
-                          e.target.value
-                            ? e.target.options[
-                                e.target.selectedIndex
-                              ].text.split(" (")[0]
-                            : null
-                        )
-                      }
-                    >
-                      <option value="">No Budget</option>
-                      {budgetsWithAmountLeft.map((budget) => (
-                        <option key={budget.id} value={budget.id}>
-                          {budget.budgetName} (Amount Left: $
-                          {budget.amountLeft.toFixed(2)})
-                        </option>
-                      ))}
-                    </select>
-                  </span>
-                </div>
-                <div className="expense-actions">
-                  <button onClick={() => startEditing(expense.id)}>Edit</button>
-                  <button onClick={() => handleDelete(expense.id)}>
-                    Delete
-                  </button>
-                </div>
+                Expense Name: {expense.expenseName} - Expense Amount: $
+                {expense.expenseAmount} - Budget:
+                <select
+                  value={expense.budgetId || ""}
+                  onChange={(e) =>
+                    handleUpdateExpenseBudget(
+                      expense.id,
+                      e.target.value,
+                      e.target.value
+                        ? e.target.options[e.target.selectedIndex].text.split(
+                            " ("
+                          )[0]
+                        : null
+                    )
+                  }
+                >
+                  <option value="">No Budget</option>
+                  {budgetsWithAmountLeft.map((budget) => (
+                    <option key={budget.id} value={budget.id}>
+                      {budget.budgetName} (Amount Left: $
+                      {budget.amountLeft.toFixed(2)})
+                    </option>
+                  ))}
+                </select>
+                <button onClick={() => startEditing(expense.id)}>Edit</button>
+                <button onClick={() => handleDelete(expense.id)}>Delete</button>
               </>
             )}
           </div>
