@@ -5,6 +5,7 @@ import "./Styles/BudgetPage.css";
 import Modal from "./Modal.jsx";
 import { BudgetContext } from "../BudgetContext.js";
 import { ExpenseContext } from "../ExpenseContext.js";
+import { AccountsContext } from "../AccountsContext.js";
 
 const BudgetPage = () => {
   const [budgets, setBudgets] = useState([]);
@@ -15,6 +16,7 @@ const BudgetPage = () => {
   const [budgetsWithExpenses, setBudgetsWithExpenses] = useState([]);
   const { contextBudgets, setContextBudgets } = useContext(BudgetContext);
   const { contextExpenses } = useContext(ExpenseContext);
+  const { contextAccounts } = useContext(AccountsContext); //todo use this to get total balance
 
   useEffect(() => {
     fetchBudgetsWithExpenses();
