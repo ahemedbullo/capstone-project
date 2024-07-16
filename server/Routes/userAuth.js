@@ -12,6 +12,17 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 app.post("/signup", async (req, res) => {
   const { user, password } = req.body;
+  if (user.length <= 5) {
+    return res
+      .status(400)
+      .json({ error: "Username must be longer than 5 letters" });
+  }
+  if (password.length <= 6) {
+    return res
+      .status(400)
+      .json({ error: "Password must be longer than 6 characters" });
+  }
+
   const existingUser = await prisma.user.findUnique({
     where: { username: user },
   });

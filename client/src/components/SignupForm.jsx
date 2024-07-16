@@ -20,6 +20,14 @@ const SignupForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
+      if (username.length <= 5) {
+        setMessage("Username must be longer than 5 letters");
+        return;
+      }
+      if (password.length <= 6) {
+        setMessage("Password must be longer than 6 characters");
+        return;
+      }
       const response = await axios.post("http://localhost:3000/auth/signup", {
         user: username,
         password: password,
