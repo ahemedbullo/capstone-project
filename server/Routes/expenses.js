@@ -30,6 +30,33 @@ app.post("/:currentProfile/", async (req, res) => {
   }
 });
 
+app.post("/:currentProfile/bulk", async (req, res) => {
+  const { currentProfile } = req.params;
+  const { expenses } = req.body;
+  try {
+    const createdExpenses = await Promise.all(
+      expenses.map(async (expense) => {
+        let expenseData = {
+          expenseName: expense.expenseName,
+          expenseAmount: parseFloat(expense.amount),
+          user: { connect: { username: currentProfile } },
+        };
+        if (expense.budgetId) {
+          expenseData.budget = { connect: { id: parseInt(expense.budgetId) } };
+          expenseData.budgetName = expense.budgetName;
+        }
+        return await prisma.expense.create({ data: expenseData });
+      })
+    );
+    res.status(201).json(createdExpenses);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Error creating expenses", error: error.message });
+  }
+});
+
 app.get("/:currentProfile/", async (req, res) => {
   const { currentProfile } = req.params;
 
@@ -57,7 +84,7 @@ app.get("/:currentProfile/:budgetId", async (req, res) => {
   }
 });
 
-app.put("/:currentProfile/:expenseId", async (req, res) => {
+/* app.put("/:currentProfile/:expenseId", async (req, res) => {
   const { currentProfile, expenseId } = req.params;
   const { budgetId, budgetName } = req.body;
   try {
@@ -72,6 +99,32 @@ app.put("/:currentProfile/:expenseId", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to update expense budget" });
+  }
+}); */
+
+app.put("/:currentProfile/:expenseId", async (req, res) => {
+  const { currentProfile, expenseId } = req.params;
+  const { budgetId, budgetName, expenseName, expenseAmount } = req.body;
+  try {
+    let updateData = {
+      expenseName,
+      expenseAmount: parseFloat(expenseAmount),
+      budgetName,
+    };
+    if (budgetId) {
+      updateData.budget = { connect: { id: parseInt(budgetId) } };
+    } else {
+      updateData.budget = { disconnect: true };
+      updateData.budgetName = null;
+    }
+    const updatedExpense = await prisma.expense.update({
+      where: { id: parseInt(expenseId), userId: currentProfile },
+      data: updateData,
+    });
+    res.status(200).json(updatedExpense);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to update expense" });
   }
 });
 

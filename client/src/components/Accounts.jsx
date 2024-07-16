@@ -61,6 +61,9 @@ const Accounts = () => {
       await axios.delete(
         `http://localhost:3000/accounts/delete_account/${currentProfile}/${accountId}`
       );
+      setAccounts(
+        accounts.filter((account) => account.accountId !== accountId)
+      );
       fetchAccounts();
     } catch (error) {
       console.error("Error deleting account:", error);
@@ -196,7 +199,7 @@ const Accounts = () => {
         </div>
       ) : (
         <p>
-          You haven't linked any accounts yet. Click the button to get started{" "}
+          You haven't linked any accounts yet. Click the button to get started
         </p>
       )}
     </div>

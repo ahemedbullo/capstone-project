@@ -6,7 +6,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const Modal = ({ budget, onClose, currentProfile, updateExpenses }) => {
+const Modal = ({ budget, onClose, currentProfile }) => {
   const [expenses, setExpenses] = useState([]);
   const [newExpense, setNewExpense] = useState({ expenseName: "", amount: "" });
 
@@ -37,7 +37,6 @@ const Modal = ({ budget, onClose, currentProfile, updateExpenses }) => {
         }
       );
       setExpenses([...expenses, response.data]);
-      updateExpenses(response.data);
       setNewExpense({ expenseName: "", amount: "" });
     } catch (error) {
       console.error("Error adding expense:", error);

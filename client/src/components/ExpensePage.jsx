@@ -4,18 +4,23 @@ import axios from "axios";
 import "./Styles/ExpensePage.css";
 import { BudgetContext } from "../BudgetContext.js";
 import { ExpenseContext } from "../ExpenseContext.js";
-import { AccountsContext } from "../AccountsContext.js";
 
 const ExpensePage = () => {
   const [expenses, setExpenses] = useState([]);
-  const [expenseName, setExpenseName] = useState("");
-  const [amount, setAmount] = useState("");
-  const [budget, setBudget] = useState({ id: "", name: "" });
+  const [newExpenses, setNewExpenses] = useState([
+    {
+      expenseId: -1,
+      expenseName: "",
+      amount: "",
+      budgetId: "",
+      budgetName: "",
+    },
+  ]);
   const [budgetsWithAmountLeft, setBudgetsWithAmountLeft] = useState([]);
+  const [editingExpenseId, setEditingExpenseId] = useState(null);
   const { contextExpenses, setContextExpenses } = useContext(ExpenseContext);
   const { currentProfile } = useContext(UserContext);
   const { contextBudgets } = useContext(BudgetContext);
-  const { contextAccounts } = useContext(AccountsContext); //todo use this to get total balance
 
   useEffect(() => {
     const fetchBudgetsAndExpenses = async () => {
@@ -51,60 +56,96 @@ const ExpensePage = () => {
     fetchBudgetsAndExpenses();
   }, [currentProfile, contextBudgets]);
 
+  const handleExpenseChange = (expenseId, field, value) => {
+    setNewExpenses(
+      newExpenses.map((expense) =>
+        expense.expenseId === expenseId
+          ? {
+              ...expense,
+              [field]: value,
+              ...(field === "budgetId" && { budgetName: getBudgetName(value) }),
+            }
+          : expense
+      )
+    );
+  };
+
+  const getBudgetName = (budgetId) => {
+    const selectedBudget = budgetsWithAmountLeft.find(
+      (b) => b.id === parseInt(budgetId)
+    );
+    return selectedBudget ? selectedBudget.budgetName : "";
+  };
+
+  const addExpenseInput = () => {
+    const lowestId = Math.min(...newExpenses.map((e) => e.expenseId), -1);
+    setNewExpenses([
+      ...newExpenses,
+      {
+        expenseId: lowestId - 1,
+        expenseName: "",
+        amount: "",
+        budgetId: "",
+        budgetName: "",
+      },
+    ]);
+  };
+
+  const removeExpenseInput = (expenseId) => {
+    setNewExpenses(
+      newExpenses.filter((expense) => expense.expenseId !== expenseId)
+    );
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const newExpense = {
-      expenseName,
-      amount: parseFloat(amount),
-      budgetId: budget.id || null,
-      budgetName: budget.name || null,
-    };
-
     try {
       const response = await axios.post(
-        `http://localhost:3000/expenses/${currentProfile}`,
-        newExpense
+        `http://localhost:3000/expenses/${currentProfile}/bulk`,
+        { expenses: newExpenses }
       );
-      setExpenses([...expenses, response.data]);
-      setContextExpenses([...expenses, response.data]);
+      setExpenses([...expenses, ...response.data]);
+      setContextExpenses([...expenses, ...response.data]);
 
-      // Update the amountLeft for the affected budget (if a budget was selected)
-      if (budget.id) {
-        setBudgetsWithAmountLeft((prevBudgets) =>
-          prevBudgets.map((b) =>
-            b.id === budget.id
-              ? { ...b, amountLeft: b.amountLeft - parseFloat(amount) }
-              : b
-          )
-        );
-      }
+      setBudgetsWithAmountLeft((prevBudgets) =>
+        prevBudgets.map((b) => {
+          const totalExpenseForBudget = response.data
+            .filter((e) => e.budgetId === b.id)
+            .reduce((sum, e) => sum + e.expenseAmount, 0);
+          return {
+            ...b,
+            amountLeft: b.amountLeft - totalExpenseForBudget,
+          };
+        })
+      );
 
-      setExpenseName("");
-      setAmount("");
-      setBudget({ id: "", name: "" });
+      setNewExpenses([
+        {
+          expenseId: -1,
+          expenseName: "",
+          amount: "",
+          budgetId: "",
+          budgetName: "",
+        },
+      ]);
     } catch (error) {
-      console.error("Error adding expense:", error);
+      console.error("Error adding expenses:", error);
     }
   };
 
   const handleDelete = async (expenseId) => {
     try {
       await axios.delete(
-        `http://localhost:3000/expenses/${currentProfile}/${parseInt(
-          expenseId
-        )}`
+        `http://localhost:3000/expenses/${currentProfile}/${expenseId}`
       );
       const deletedExpense = expenses.find(
-        (expense) => expense.id === parseInt(expenseId)
+        (expense) => expense.id === expenseId
       );
-      setExpenses(
-        expenses.filter((expense) => expense.id !== parseInt(expenseId))
-      );
+      setExpenses(expenses.filter((expense) => expense.id !== expenseId));
       setContextExpenses(
-        expenses.filter((expense) => expense.id !== parseInt(expenseId))
+        expenses.filter((expense) => expense.id !== expenseId)
       );
 
-      // Update the amountLeft for the affected budget
       if (deletedExpense.budgetId) {
         setBudgetsWithAmountLeft((prevBudgets) =>
           prevBudgets.map((b) =>
@@ -131,8 +172,8 @@ const ExpensePage = () => {
       const expenseToUpdate = expenses.find((e) => e.id === expenseId);
       const updatedExpense = {
         ...expenseToUpdate,
-        budgetId: newBudgetId,
-        budgetName: newBudgetName,
+        budgetId: newBudgetId ? parseInt(newBudgetId) : null,
+        budgetName: newBudgetName || null,
       };
 
       const response = await axios.put(
@@ -148,7 +189,6 @@ const ExpensePage = () => {
         expenses.map((e) => (e.id === expenseId ? response.data : e))
       );
 
-      // Update amountLeft for both old and new budgets
       setBudgetsWithAmountLeft((prevBudgets) =>
         prevBudgets.map((b) => {
           if (b.id === expenseToUpdate.budgetId) {
@@ -156,7 +196,7 @@ const ExpensePage = () => {
               ...b,
               amountLeft: b.amountLeft + expenseToUpdate.expenseAmount,
             };
-          } else if (b.id === newBudgetId) {
+          } else if (newBudgetId && b.id === parseInt(newBudgetId)) {
             return {
               ...b,
               amountLeft: b.amountLeft - expenseToUpdate.expenseAmount,
@@ -170,56 +210,91 @@ const ExpensePage = () => {
     }
   };
 
+  const startEditing = (expenseId) => {
+    setEditingExpenseId(expenseId);
+  };
+
+  const handleEditChange = (field, value) => {
+    setExpenses(
+      expenses.map((expense) =>
+        expense.id === editingExpenseId
+          ? {
+              ...expense,
+              [field]: field === "expenseAmount" ? parseFloat(value) : value,
+            }
+          : expense
+      )
+    );
+  };
+
+  const handleEditSubmit = async () => {
+    const editedExpense = expenses.find((e) => e.id === editingExpenseId);
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/expenses/${currentProfile}/${editingExpenseId}`,
+        editedExpense
+      );
+
+      setExpenses(
+        expenses.map((e) => (e.id === editingExpenseId ? response.data : e))
+      );
+      setContextExpenses(
+        expenses.map((e) => (e.id === editingExpenseId ? response.data : e))
+      );
+
+      setBudgetsWithAmountLeft((prevBudgets) =>
+        prevBudgets.map((b) => {
+          if (b.id === editedExpense.budgetId) {
+            return {
+              ...b,
+              amountLeft: b.amountLeft - editedExpense.expenseAmount,
+            };
+          }
+          return b;
+        })
+      );
+
+      setEditingExpenseId(null);
+    } catch (error) {
+      console.error("Error updating expense:", error);
+    }
+  };
+
   return (
     <div className="create-expense-box">
       <h2>Add Expenses</h2>
       <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Expense Name"
-          value={expenseName}
-          onChange={(e) => setExpenseName(e.target.value)}
-          required
-        />
-        <input
-          type="number"
-          placeholder="Amount"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          required
-        />
-        <select
-          value={budget.id}
-          onChange={(e) =>
-            setBudget({
-              id: e.target.value ? parseInt(e.target.value) : "",
-              name: e.target.options[e.target.selectedIndex].text.split(
-                " ("
-              )[0],
-            })
-          }
-        >
-          <option value="">No Budget</option>
-          {budgetsWithAmountLeft.map((budget) => (
-            <option key={budget.id} value={budget.id}>
-              {budget.budgetName} (Amount Left: ${budget.amountLeft.toFixed(2)})
-            </option>
-          ))}
-        </select>
-        <button type="submit">Add Expense</button>
-      </form>
-      <div className="expenses-container">
-        {expenses.map((expense) => (
-          <div key={`${expense.id}`} className="expense">
-            Expense Name: {expense.expenseName} - Expense Amount: $
-            {expense.expenseAmount} - Budget:
-            <select
-              value={expense.budgetId || ""}
+        {newExpenses.map((expense) => (
+          <div key={expense.expenseId}>
+            <input
+              type="text"
+              placeholder="Expense Name"
+              value={expense.expenseName}
               onChange={(e) =>
-                handleUpdateExpenseBudget(
-                  expense.id,
-                  e.target.value ? parseInt(e.target.value) : null,
-                  e.target.options[e.target.selectedIndex].text.split(" (")[0]
+                handleExpenseChange(
+                  expense.expenseId,
+                  "expenseName",
+                  e.target.value
+                )
+              }
+              required
+            />
+            <input
+              type="number"
+              placeholder="Amount"
+              value={expense.amount}
+              onChange={(e) =>
+                handleExpenseChange(expense.expenseId, "amount", e.target.value)
+              }
+              required
+            />
+            <select
+              value={expense.budgetId}
+              onChange={(e) =>
+                handleExpenseChange(
+                  expense.expenseId,
+                  "budgetId",
+                  e.target.value
                 )
               }
             >
@@ -231,7 +306,85 @@ const ExpensePage = () => {
                 </option>
               ))}
             </select>
-            <button onClick={() => handleDelete(expense.id)}>Delete</button>
+            <button
+              type="button"
+              onClick={() => removeExpenseInput(expense.expenseId)}
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+        <button type="button" onClick={addExpenseInput}>
+          Add Another Expense
+        </button>
+        <button type="submit">Add Expenses</button>
+      </form>
+      <div className="expenses-container">
+        {expenses.map((expense) => (
+          <div key={expense.id} className="expense">
+            {editingExpenseId === expense.id ? (
+              <>
+                <input
+                  type="text"
+                  value={expense.expenseName}
+                  onChange={(e) =>
+                    handleEditChange("expenseName", e.target.value)
+                  }
+                />
+                <input
+                  type="number"
+                  value={expense.expenseAmount}
+                  onChange={(e) =>
+                    handleEditChange("expenseAmount", e.target.value)
+                  }
+                />
+                <select
+                  value={expense.budgetId || ""}
+                  onChange={(e) => handleEditChange("budgetId", e.target.value)}
+                >
+                  <option value="">No Budget</option>
+                  {budgetsWithAmountLeft.map((budget) => (
+                    <option key={budget.id} value={budget.id}>
+                      {budget.budgetName} (Amount Left: $
+                      {budget.amountLeft.toFixed(2)})
+                    </option>
+                  ))}
+                </select>
+                <button onClick={handleEditSubmit}>Save</button>
+                <button onClick={() => setEditingExpenseId(null)}>
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <>
+                Expense Name: {expense.expenseName} - Expense Amount: $
+                {expense.expenseAmount} - Budget:
+                <select
+                  value={expense.budgetId || ""}
+                  onChange={(e) =>
+                    handleUpdateExpenseBudget(
+                      expense.id,
+                      e.target.value,
+                      e.target.value
+                        ? e.target.options[e.target.selectedIndex].text.split(
+                            " ("
+                          )[0]
+                        : null
+                    )
+                  }
+                >
+                  <option value="">No Budget</option>
+                  {budgetsWithAmountLeft.map((budget) => (
+                    <option key={budget.id} value={budget.id}>
+                      {budget.budgetName} (Amount Left: $
+                      {budget.amountLeft.toFixed(2)})
+                    </option>
+                  ))}
+                </select>
+                <button onClick={() => startEditing(expense.id)}>Edit</button>
+                <button onClick={() => handleDelete(expense.id)}>Delete</button>
+              </>
+            )}
           </div>
         ))}
       </div>
