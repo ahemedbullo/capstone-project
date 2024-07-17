@@ -31,12 +31,6 @@ const HomePage = () => {
           value={{ contextAccounts, setContextAccounts }}
         >
           <div className="homepage">
-            <header className="header">
-              <h1>Welcome, {currentProfile}</h1>
-              <button className="logout-btn" onClick={handleLogout}>
-                Logout
-              </button>
-            </header>
             <main className="main-content">
               <aside className="sidebar">
                 <Accounts />

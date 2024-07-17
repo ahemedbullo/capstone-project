@@ -6,7 +6,7 @@
 
 
 .budget-form {
-  background-color: var(--card-background);
+  background-color: #f9f9f9;
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -51,7 +51,7 @@
 
 
 .budget-item {
-  background-color: var(--card-background);
+  background-color: #f9f9f9;
   border-radius: 8px;
   padding: 1rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

@@ -45,14 +45,13 @@ const BudgetPage = () => {
         const amountLeft = budget.budgetAmount - totalExpenses;
         return { ...budget, amountLeft, totalExpenses };
       });
-
+      updatedBudgets.sort((a, b) => b.id - a.id);
       setBudgetsWithExpenses(updatedBudgets);
       setBudgets(updatedBudgets);
     } catch (error) {
       console.error("Error fetching budgets and expenses:", error);
     }
   };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     const newBudget = { budgetName, budgetAmount: parseFloat(budgetAmount) };
