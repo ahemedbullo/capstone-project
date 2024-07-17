@@ -38,6 +38,14 @@ function App() {
   };
   return (
     <UserContext.Provider value={{ currentProfile, setCurrentProfile }}>
+      <header className="header">
+        <h1>Welcome, {currentProfile}</h1>
+        {currentProfile && (
+          <button className="logout-btn" onClick={handleLogout}>
+            Logout
+          </button>
+        )}
+      </header>
       <Routes>
         {currentProfile ? (
           <>
@@ -51,7 +59,9 @@ function App() {
           </>
         )}
       </Routes>
-      {/* {currentProfile && <button onClick={handleLogout}>Logout</button>} */}
+      <footer className="footer">
+        <p>&copy; Budget App Created by Ahemed Summer 2024</p>
+      </footer>
     </UserContext.Provider>
   );
 }

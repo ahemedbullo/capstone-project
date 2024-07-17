@@ -258,64 +258,70 @@ const ExpensePage = () => {
   };
 
   return (
-    <div className="create-expense-box">
-      <h2>Add Expenses</h2>
-      <form onSubmit={handleSubmit}>
-        {newExpenses.map((expense) => (
-          <div key={expense.expenseId}>
-            <input
-              type="text"
-              placeholder="Expense Name"
-              value={expense.expenseName}
-              onChange={(e) =>
-                handleExpenseChange(
-                  expense.expenseId,
-                  "expenseName",
-                  e.target.value
-                )
-              }
-              required
-            />
-            <input
-              type="number"
-              placeholder="Amount"
-              value={expense.amount}
-              onChange={(e) =>
-                handleExpenseChange(expense.expenseId, "amount", e.target.value)
-              }
-              required
-            />
-            <select
-              value={expense.budgetId}
-              onChange={(e) =>
-                handleExpenseChange(
-                  expense.expenseId,
-                  "budgetId",
-                  e.target.value
-                )
-              }
-            >
-              <option value="">No Budget</option>
-              {budgetsWithAmountLeft.map((budget) => (
-                <option key={budget.id} value={budget.id}>
-                  {budget.budgetName} (Amount Left: $
-                  {budget.amountLeft.toFixed(2)})
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={() => removeExpenseInput(expense.expenseId)}
-            >
-              Remove
-            </button>
-          </div>
-        ))}
-        <button type="button" onClick={addExpenseInput}>
-          Add Another Expense
-        </button>
-        <button type="submit">Add Expenses</button>
-      </form>
+    <>
+      <div className="create-expense-box">
+        <h2>Add Expenses</h2>
+        <form onSubmit={handleSubmit}>
+          {newExpenses.map((expense) => (
+            <div key={expense.expenseId}>
+              <input
+                type="text"
+                placeholder="Expense Name"
+                value={expense.expenseName}
+                onChange={(e) =>
+                  handleExpenseChange(
+                    expense.expenseId,
+                    "expenseName",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Amount"
+                value={expense.amount}
+                onChange={(e) =>
+                  handleExpenseChange(
+                    expense.expenseId,
+                    "amount",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <select
+                value={expense.budgetId}
+                onChange={(e) =>
+                  handleExpenseChange(
+                    expense.expenseId,
+                    "budgetId",
+                    e.target.value
+                  )
+                }
+              >
+                <option value="">No Budget</option>
+                {budgetsWithAmountLeft.map((budget) => (
+                  <option key={budget.id} value={budget.id}>
+                    {budget.budgetName} (Amount Left: $
+                    {budget.amountLeft.toFixed(2)})
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => removeExpenseInput(expense.expenseId)}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          <button type="button" onClick={addExpenseInput}>
+            Add Another Expense
+          </button>
+          <button type="submit">Add Expenses</button>
+        </form>
+      </div>
       <div className="expenses-container">
         {expenses.map((expense) => (
           <div key={expense.id} className="expense">
@@ -379,13 +385,18 @@ const ExpensePage = () => {
                   ))}
                 </select>
                 <button onClick={() => startEditing(expense.id)}>Edit</button>
-                <button onClick={() => handleDelete(expense.id)}>Delete</button>
+                <button
+                  onClick={() => handleDelete(expense.id)}
+                  className="delete-btn"
+                >
+                  Delete
+                </button>
               </>
             )}
           </div>
         ))}
       </div>
-    </div>
+    </>
   );
 };
 
