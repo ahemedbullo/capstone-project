@@ -29,13 +29,11 @@ const ExpensePage = () => {
           axios.get(`http://localhost:3000/budgets/${currentProfile}`),
           axios.get(`http://localhost:3000/expenses/${currentProfile}`),
         ]);
-
         const budgetsData = budgetsResponse.data;
         const expensesData = expensesResponse.data;
-
+        expensesData.sort((a, b) => b.id - a.id);
         setExpenses(expensesData);
         setContextExpenses(expensesData);
-
         const updatedBudgets = budgetsData.map((budget) => {
           const budgetExpenses = expensesData.filter(
             (expense) => expense.budgetId === budget.id
@@ -47,7 +45,6 @@ const ExpensePage = () => {
           const amountLeft = budget.budgetAmount - totalExpenses;
           return { ...budget, amountLeft };
         });
-
         setBudgetsWithAmountLeft(updatedBudgets);
       } catch (error) {
         console.error("Error fetching budgets and expenses:", error);
