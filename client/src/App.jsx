@@ -7,9 +7,15 @@ import LoginForm from "./components/LoginForm.jsx";
 import SignupForm from "./components/SignupForm.jsx";
 import HomePage from "./components/HomePage.jsx";
 import { UserContext } from "./UserContext.js";
+import { BudgetContext } from "./BudgetContext.js";
+import { ExpenseContext } from "./ExpenseContext.js";
+import { AccountsContext } from "./AccountsContext.js";
 
 function App() {
   const [currentProfile, setCurrentProfile] = useState(null);
+  const [contextExpenses, setContextExpenses] = useState([]);
+  const [contextBudgets, setContextBudgets] = useState([]);
+  const [contextAccounts, setContextAccounts] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,30 +44,40 @@ function App() {
   };
   return (
     <UserContext.Provider value={{ currentProfile, setCurrentProfile }}>
-      <header className="header">
-        <h1>Welcome, {currentProfile}</h1>
-        {currentProfile && (
-          <button className="logout-btn" onClick={handleLogout}>
-            Logout
-          </button>
-        )}
-      </header>
-      <Routes>
-        {currentProfile ? (
-          <>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/home" element={<HomePage />} />
-          </>
-        ) : (
-          <>
-            <Route path="/" element={<LoginForm />} />
-            <Route path="/signup" element={<SignupForm />} />
-          </>
-        )}
-      </Routes>
-      <footer className="footer">
-        <p>&copy; Budget App Created by Ahemed Summer 2024</p>
-      </footer>
+      <BudgetContext.Provider value={{ contextBudgets, setContextBudgets }}>
+        <ExpenseContext.Provider
+          value={{ contextExpenses, setContextExpenses }}
+        >
+          <AccountsContext.Provider
+            value={{ contextAccounts, setContextAccounts }}
+          >
+            <header className="header">
+              <h1>Welcome, {currentProfile}</h1>
+              {currentProfile && (
+                <button className="logout-btn" onClick={handleLogout}>
+                  Logout
+                </button>
+              )}
+            </header>
+            <Routes>
+              {currentProfile ? (
+                <>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/home" element={<HomePage />} />
+                </>
+              ) : (
+                <>
+                  <Route path="/" element={<LoginForm />} />
+                  <Route path="/signup" element={<SignupForm />} />
+                </>
+              )}
+            </Routes>
+            <footer className="footer">
+              <p>&copy; Budget App Created by Ahemed Summer 2024</p>
+            </footer>
+          </AccountsContext.Provider>
+        </ExpenseContext.Provider>
+      </BudgetContext.Provider>
     </UserContext.Provider>
   );
 }

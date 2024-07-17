@@ -25,31 +25,25 @@ const HomePage = () => {
   };
 
   return (
-    <BudgetContext.Provider value={{ contextBudgets, setContextBudgets }}>
-      <ExpenseContext.Provider value={{ contextExpenses, setContextExpenses }}>
-        <AccountsContext.Provider
-          value={{ contextAccounts, setContextAccounts }}
-        >
-          <div className="homepage">
-            <main className="main-content">
-              <aside className="sidebar">
-                <Accounts />
-              </aside>
-              <section className="budget-expense-container">
-                <div className="card budget-card">
-                  <h2>Budgets</h2>
-                  <BudgetPage />
-                </div>
-                <div className="card expense-card">
-                  <h2>Expenses</h2>
-                  <ExpensePage />
-                </div>
-              </section>
-            </main>
-          </div>
-        </AccountsContext.Provider>
-      </ExpenseContext.Provider>
-    </BudgetContext.Provider>
+    <>
+      <div className="homepage">
+        <main className="main-content">
+          <aside className="sidebar">
+            <Accounts />
+          </aside>
+          <section className="budget-expense-container">
+            <div className="card budget-card">
+              <h2>Budgets</h2>
+              <BudgetPage />
+            </div>
+            <div className="card expense-card">
+              <h2>Expenses</h2>
+              <ExpensePage />
+            </div>
+          </section>
+        </main>
+      </div>
+    </>
   );
 };
 
