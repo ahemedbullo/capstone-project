@@ -5,11 +5,12 @@ const prisma = new PrismaClient();
 
 app.post("/:currentProfile/", async (req, res) => {
   const { currentProfile } = req.params;
-  const { expenseName, amount, budgetId, budgetName } = req.body;
+  const { expenseName, amount, budgetId, budgetName, purchaseDate } = req.body;
   try {
     let expenseData = {
       expenseName,
       expenseAmount: parseFloat(amount),
+      purchaseDate: new Date(purchaseDate),
       user: { connect: { username: currentProfile } },
     };
 
@@ -33,12 +34,14 @@ app.post("/:currentProfile/", async (req, res) => {
 app.post("/:currentProfile/bulk", async (req, res) => {
   const { currentProfile } = req.params;
   const { expenses } = req.body;
+  console.log(req.body);
   try {
     const createdExpenses = await Promise.all(
       expenses.map(async (expense) => {
         let expenseData = {
           expenseName: expense.expenseName,
           expenseAmount: parseFloat(expense.amount),
+          purchaseDate: new Date(expense.purchaseDate),
           user: { connect: { username: currentProfile } },
         };
         if (expense.budgetId) {
@@ -104,11 +107,13 @@ app.get("/:currentProfile/:budgetId", async (req, res) => {
 
 app.put("/:currentProfile/:expenseId", async (req, res) => {
   const { currentProfile, expenseId } = req.params;
-  const { budgetId, budgetName, expenseName, expenseAmount } = req.body;
+  const { budgetId, budgetName, expenseName, expenseAmount, purchaseDate } =
+    req.body;
   try {
     let updateData = {
       expenseName,
       expenseAmount: parseFloat(expenseAmount),
+      purchaseDate: new Date(purchaseDate),
       budgetName,
     };
     if (budgetId) {

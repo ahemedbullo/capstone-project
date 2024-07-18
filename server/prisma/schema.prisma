@@ -48,6 +48,7 @@ model Expense {
   id         Int     @id @default(autoincrement())
   expenseName  String
   expenseAmount Float 
+  purchaseDate  DateTime
   userId       String
   user         User     @relation(fields: [userId], references: [username])
   budgetId Int?

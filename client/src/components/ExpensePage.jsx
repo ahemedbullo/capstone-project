@@ -14,6 +14,7 @@ const ExpensePage = () => {
       amount: "",
       budgetId: "",
       budgetName: "",
+      purchaseDate: new Date().toISOString().split("T")[0],
     },
   ]);
   const [budgetsWithAmountLeft, setBudgetsWithAmountLeft] = useState([]);
@@ -123,6 +124,7 @@ const ExpensePage = () => {
           amount: "",
           budgetId: "",
           budgetName: "",
+          purchaseDate: new Date().toISOString().split("T")[0],
         },
       ]);
     } catch (error) {
@@ -290,6 +292,18 @@ const ExpensePage = () => {
                 }
                 required
               />
+              <input
+                type="date"
+                value={expense.purchaseDate}
+                onChange={(e) =>
+                  handleExpenseChange(
+                    expense.expenseId,
+                    "purchaseDate",
+                    e.target.value
+                  )
+                }
+                required
+              />
               <select
                 value={expense.budgetId}
                 onChange={(e) =>
@@ -341,6 +355,13 @@ const ExpensePage = () => {
                     handleEditChange("expenseAmount", e.target.value)
                   }
                 />
+                <input
+                  type="date"
+                  value={expense.purchaseDate.split("T"[0])}
+                  onChange={(e) =>
+                    handleEditChange("purchaseDate", e.target.value)
+                  }
+                />
                 <select
                   value={expense.budgetId || ""}
                   onChange={(e) => handleEditChange("budgetId", e.target.value)}
@@ -361,7 +382,8 @@ const ExpensePage = () => {
             ) : (
               <>
                 Expense Name: {expense.expenseName} - Expense Amount: $
-                {expense.expenseAmount} - Budget:
+                {expense.expenseAmount} - Purchase Date:{" "}
+                {new Date(expense.purchaseDate).toLocaleDateString()} - Budget:
                 <select
                   value={expense.budgetId || ""}
                   onChange={(e) =>
