@@ -63,7 +63,7 @@ const LoginForm = () => {
             />
           </div>
           <p>
-            New to sfx?<Link to={"/signup"}> Sign up now.</Link>{" "}
+            New to us?<Link to={"/signup"}> Sign up now.</Link>{" "}
           </p>
           <button type="submit" className="login-btn">
             Login

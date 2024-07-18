@@ -93,61 +93,63 @@ const BudgetPage = () => {
   };
 
   return (
-    <div className="budget-page">
-      <div className="budget-form">
-        <h3>Create a New Budget</h3>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="Budget Name"
-            value={budgetName}
-            onChange={(e) => setBudgetName(e.target.value)}
-            required
+    <>
+      <div className="budget-page">
+        <div className="budget-form">
+          <h3>Create a New Budget</h3>
+          <form onSubmit={handleSubmit}>
+            <input
+              type="text"
+              placeholder="Budget Name"
+              value={budgetName}
+              onChange={(e) => setBudgetName(e.target.value)}
+              required
+            />
+            <input
+              type="number"
+              placeholder="Budget Amount"
+              value={budgetAmount}
+              onChange={(e) => setBudgetAmount(e.target.value)}
+              required
+            />
+            <button type="submit">Create Budget</button>
+          </form>
+        </div>
+        <div className="budget-list">
+          {budgetsWithExpenses.map((budget) => (
+            <div key={budget.id} className="budget-item">
+              <h4>{budget.budgetName}</h4>
+              <div className="budget-details">
+                <p>Total: ${budget.budgetAmount}</p>
+                <p>Spent: ${budget.totalExpenses.toFixed(2)}</p>
+                <p>Left: ${budget.amountLeft.toFixed(2)}</p>
+              </div>
+              <div className="budget-progress">
+                <div
+                  className="progress-bar"
+                  style={{
+                    width: `${
+                      (budget.totalExpenses / budget.budgetAmount) * 100
+                    }%`,
+                  }}
+                ></div>
+              </div>
+              <div className="budget-actions">
+                <button onClick={() => setModalBudget(budget)}>Details</button>
+                <button onClick={() => handleDelete(budget.id)}>Delete</button>
+              </div>
+            </div>
+          ))}
+        </div>
+        {modalBudget && (
+          <Modal
+            budget={modalBudget}
+            onClose={() => setModalBudget(null)}
+            currentProfile={currentProfile}
           />
-          <input
-            type="number"
-            placeholder="Budget Amount"
-            value={budgetAmount}
-            onChange={(e) => setBudgetAmount(e.target.value)}
-            required
-          />
-          <button type="submit">Create Budget</button>
-        </form>
+        )}
       </div>
-      <div className="budget-list">
-        {budgetsWithExpenses.map((budget) => (
-          <div key={budget.id} className="budget-item">
-            <h4>{budget.budgetName}</h4>
-            <div className="budget-details">
-              <p>Total: ${budget.budgetAmount}</p>
-              <p>Spent: ${budget.totalExpenses.toFixed(2)}</p>
-              <p>Left: ${budget.amountLeft.toFixed(2)}</p>
-            </div>
-            <div className="budget-progress">
-              <div
-                className="progress-bar"
-                style={{
-                  width: `${
-                    (budget.totalExpenses / budget.budgetAmount) * 100
-                  }%`,
-                }}
-              ></div>
-            </div>
-            <div className="budget-actions">
-              <button onClick={() => setModalBudget(budget)}>Details</button>
-              <button onClick={() => handleDelete(budget.id)}>Delete</button>
-            </div>
-          </div>
-        ))}
-      </div>
-      {modalBudget && (
-        <Modal
-          budget={modalBudget}
-          onClose={() => setModalBudget(null)}
-          currentProfile={currentProfile}
-        />
-      )}
-    </div>
+    </>
   );
 };
 

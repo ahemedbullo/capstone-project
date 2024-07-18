@@ -10,6 +10,10 @@ import { UserContext } from "./UserContext.js";
 import { BudgetContext } from "./BudgetContext.js";
 import { ExpenseContext } from "./ExpenseContext.js";
 import { AccountsContext } from "./AccountsContext.js";
+import ExpensePage from "./components/ExpensePage.jsx";
+import BudgetPage from "./components/BudgetPage.jsx";
+import Accounts from "./components/Accounts.jsx";
+import NavBar from "./components/NavBar.jsx";
 
 function App() {
   const [currentProfile, setCurrentProfile] = useState(null);
@@ -51,19 +55,32 @@ function App() {
           <AccountsContext.Provider
             value={{ contextAccounts, setContextAccounts }}
           >
-            <header className="header">
-              <h1>Welcome, {currentProfile}</h1>
-              {currentProfile && (
-                <button className="logout-btn" onClick={handleLogout}>
-                  Logout
-                </button>
-              )}
-            </header>
+            {currentProfile ? (
+              <>
+                <header className="header">
+                  <h1>Welcome, {currentProfile}</h1>
+                  <button className="logout-btn" onClick={handleLogout}>
+                    Logout
+                  </button>
+                </header>
+                <NavBar />
+              </>
+            ) : (
+              <>
+                <header className="header">
+                  <h1>Welcome, Log in or Sign Up to track your Budget!</h1>
+                </header>
+              </>
+            )}
+
             <Routes>
               {currentProfile ? (
                 <>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/home" element={<HomePage />} />
+                  <Route path="/expenses" element={<ExpensePage />} />
+                  <Route path="/budgets" element={<BudgetPage />} />
+                  <Route path="/accounts" element={<Accounts />} />
                 </>
               ) : (
                 <>
