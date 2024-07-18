@@ -34,7 +34,6 @@ app.post("/:currentProfile/", async (req, res) => {
 app.post("/:currentProfile/bulk", async (req, res) => {
   const { currentProfile } = req.params;
   const { expenses } = req.body;
-  console.log(req.body);
   try {
     const createdExpenses = await Promise.all(
       expenses.map(async (expense) => {
