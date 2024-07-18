@@ -55,43 +55,46 @@ function App() {
           <AccountsContext.Provider
             value={{ contextAccounts, setContextAccounts }}
           >
-            {currentProfile ? (
-              <>
-                <header className="header">
-                  <h1>Welcome, {currentProfile}</h1>
-                  <button className="logout-btn" onClick={handleLogout}>
-                    Logout
-                  </button>
-                </header>
-                <NavBar />
-              </>
-            ) : (
-              <>
-                <header className="header">
-                  <h1>Welcome, Log in or Sign Up to track your Budget!</h1>
-                </header>
-              </>
-            )}
-
-            <Routes>
+            <div className="app">
               {currentProfile ? (
                 <>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/home" element={<HomePage />} />
-                  <Route path="/expenses" element={<ExpensePage />} />
-                  <Route path="/budgets" element={<BudgetPage />} />
-                  <Route path="/accounts" element={<Accounts />} />
+                  <header className="header">
+                    <h1>Welcome, {currentProfile}</h1>
+                    <button className="logout-btn" onClick={handleLogout}>
+                      Logout
+                    </button>
+                  </header>
+                  <NavBar />
                 </>
               ) : (
                 <>
-                  <Route path="/" element={<LoginForm />} />
-                  <Route path="/signup" element={<SignupForm />} />
+                  <header className="header">
+                    <h1>Welcome, Log in or Sign Up to track your Budget!</h1>
+                  </header>
                 </>
               )}
-            </Routes>
-            <footer className="footer">
-              <p>&copy; Budget App Created by Ahemed Summer 2024</p>
-            </footer>
+              <div className="main">
+                <Routes>
+                  {currentProfile ? (
+                    <>
+                      <Route path="/" element={<HomePage />} />
+                      <Route path="/home" element={<HomePage />} />
+                      <Route path="/expenses" element={<ExpensePage />} />
+                      <Route path="/budgets" element={<BudgetPage />} />
+                      <Route path="/accounts" element={<Accounts />} />
+                    </>
+                  ) : (
+                    <>
+                      <Route path="/" element={<LoginForm />} />
+                      <Route path="/signup" element={<SignupForm />} />
+                    </>
+                  )}
+                </Routes>
+              </div>
+              <footer className="footer">
+                <p>&copy; Budget App Created by Ahemed Summer 2024</p>
+              </footer>
+            </div>
           </AccountsContext.Provider>
         </ExpenseContext.Provider>
       </BudgetContext.Provider>

@@ -9,7 +9,6 @@ import Accounts from "./Accounts.jsx";
 import { BudgetContext } from "../BudgetContext.js";
 import { ExpenseContext } from "../ExpenseContext.js";
 import { AccountsContext } from "../AccountsContext.js";
-import NavBar from "./NavBar.jsx";
 const HomePage = () => {
   const navigate = useNavigate();
 
