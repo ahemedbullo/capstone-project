@@ -51,7 +51,7 @@ const ExpensePage = () => {
       }
     };
     fetchBudgetsAndExpenses();
-  }, [currentProfile, contextBudgets, contextExpenses]);
+  }, [currentProfile, contextBudgets]);
 
   const handleExpenseChange = (expenseId, field, value) => {
     setNewExpenses(

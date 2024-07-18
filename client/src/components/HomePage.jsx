@@ -11,18 +11,9 @@ import { ExpenseContext } from "../ExpenseContext.js";
 import { AccountsContext } from "../AccountsContext.js";
 
 const HomePage = () => {
-  const { currentProfile, setCurrentProfile } = useContext(UserContext);
-  const [contextExpenses, setContextExpenses] = useState([]);
-  const [contextBudgets, setContextBudgets] = useState([]);
-  const [contextAccounts, setContextAccounts] = useState([]);
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    window.localStorage.removeItem("token");
-    axios.defaults.headers.Authorization = null;
-    setCurrentProfile(null);
-    navigate("/");
-  };
+  const { contextAccounts } = useContext(AccountsContext);
 
   return (
     <>
