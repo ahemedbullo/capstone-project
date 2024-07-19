@@ -67,7 +67,7 @@
 }
 
 .date-range button {
-  background-color: #3498db;
+  background-color:  #45a049;
   color: white;
   border: none;
   padding: 8px 15px;
@@ -77,7 +77,7 @@
 }
 
 .date-range button:hover {
-  background-color: #2980b9;
+  background-color: #45a049;
 }
 
 
@@ -109,7 +109,7 @@
 }
 
 .expense button {
-  background-color: #3498db;
+  background-color: #45a049;
   border: none;
   color: white;
   padding: 8px 15px;
@@ -124,7 +124,7 @@
 }
 
 .expense button:hover {
-  background-color: #2980b9;
+  background-color: #45a049;
 }
 
 .expense .delete-btn {

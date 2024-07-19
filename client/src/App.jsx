@@ -68,7 +68,10 @@ function App() {
                 </>
               ) : (
                 <>
-                  <header className="header">
+                  <header
+                    className="header"
+                    style={{ padding: "30px", justifyContent: "center" }}
+                  >
                     <h1>Welcome, Log in or Sign Up to track your Budget!</h1>
                   </header>
                 </>
