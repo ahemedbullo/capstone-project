@@ -1,51 +1,157 @@
+.create-expense-box {
+  background-color: #f9f9f9;
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.create-expense-box h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #2c3e50;
+}
+
+.create-expense-box input,
+.create-expense-box select {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
 .create-expense-box button {
-    background-color: #4CAF50;
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin-top: 10px;
-    cursor: pointer;
-    border-radius: 5px;
-  }
-  
-.create-expense-box input {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-  }
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin-top: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
 
-  .create-expense-box h2 {
-    margin-top: 0;
-    margin-bottom: 20px;
-  }
+.create-expense-box button:hover {
+  background-color: #45a049;
+}
 
-  .create-expense-box {
-    background-color: #f9f9f9;
-    border: 1px solid #dddddd;
-    border-radius: 5px;
-    padding: 20px;
-    margin-bottom: 20px;
-  }
-  
+
+.date-range,
+.sorting-options {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.date-range label,
+.sorting-options label {
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.date-range input,
+.sorting-options select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-right: 10px;
+}
+
+.date-range button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.date-range button:hover {
+  background-color: #2980b9;
+}
+
+
+.expenses-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.expense {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 20px;
+  width: calc(50% - 10px); 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+.expense input,
+.expense select {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.expense button {
+  background-color: #3498db;
+  border: none;
+  color: white;
+  padding: 8px 15px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  margin-right: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.expense button:hover {
+  background-color: #2980b9;
+}
+
+.expense .delete-btn {
+  background-color: #e74c3c;
+}
+
+.expense .delete-btn:hover {
+  background-color: #c0392b;
+}
+
+
+@media (max-width: 768px) {
   .expense {
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 20px;
-    width: calc(50% - 20px); /* 2 cards per row */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    box-sizing: border-box;
+    width: 100%;
   }
-
-  .delete-btn{
-    background-color: #e74c3c;
-  }
-
   
+  .date-range,
+  .sorting-options {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .date-range input,
+  .sorting-options select,
+  .date-range button {
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
+}
+

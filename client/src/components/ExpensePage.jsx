@@ -22,6 +22,41 @@ const ExpensePage = () => {
   const { contextExpenses, setContextExpenses } = useContext(ExpenseContext);
   const { currentProfile } = useContext(UserContext);
   const { contextBudgets } = useContext(BudgetContext);
+  const [sortOption, setSortOption] = useState("newest");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  const filterAndSortExpenses = (expenses, option, start, end) => {
+    return expenses
+      .filter((expense) => {
+        if (!start && !end) return true;
+        const expenseDate = new Date(expense.purchaseDate);
+        if (start && end) {
+          return expenseDate >= new Date(start) && expenseDate <= new Date(end);
+        } else if (start) {
+          return expenseDate >= new Date(start);
+        } else if (end) {
+          return expenseDate <= new Date(end);
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        switch (option) {
+          case "newest":
+            return new Date(b.purchaseDate) - new Date(a.purchaseDate);
+          case "oldest":
+            return new Date(a.purchaseDate) - new Date(b.purchaseDate);
+          case "highestAmount":
+            return b.expenseAmount - a.expenseAmount;
+          case "lowestAmount":
+            return a.expenseAmount - b.expenseAmount;
+          case "name":
+            return a.expenseName.localeCompare(b.expenseName);
+          default:
+            return 0;
+        }
+      });
+  };
 
   useEffect(() => {
     const fetchBudgetsAndExpenses = async () => {
@@ -32,9 +67,14 @@ const ExpensePage = () => {
         ]);
         const budgetsData = budgetsResponse.data;
         const expensesData = expensesResponse.data;
-        expensesData.sort((a, b) => b.id - a.id);
-        setExpenses(expensesData);
-        setContextExpenses(expensesData);
+        const filteredAndSortedExpenses = filterAndSortExpenses(
+          expensesData,
+          sortOption,
+          startDate,
+          endDate
+        );
+        setExpenses(filteredAndSortedExpenses);
+        setContextExpenses(filteredAndSortedExpenses);
         const updatedBudgets = budgetsData.map((budget) => {
           const budgetExpenses = expensesData.filter(
             (expense) => expense.budgetId === budget.id
@@ -52,7 +92,7 @@ const ExpensePage = () => {
       }
     };
     fetchBudgetsAndExpenses();
-  }, [currentProfile, contextBudgets]);
+  }, [currentProfile, contextBudgets, sortOption, startDate, endDate]);
 
   const handleExpenseChange = (expenseId, field, value) => {
     setNewExpenses(
@@ -85,6 +125,7 @@ const ExpensePage = () => {
         amount: "",
         budgetId: "",
         budgetName: "",
+        purchaseDate: new Date().toISOString().split("T")[0],
       },
     ]);
   };
@@ -102,8 +143,14 @@ const ExpensePage = () => {
         `http://localhost:3000/expenses/${currentProfile}/bulk`,
         { expenses: newExpenses }
       );
-      setExpenses([...expenses, ...response.data]);
-      setContextExpenses([...expenses, ...response.data]);
+      const updatedExpenses = filterAndSortExpenses(
+        [...expenses, ...response.data],
+        sortOption,
+        startDate,
+        endDate
+      );
+      setExpenses(updatedExpenses);
+      setContextExpenses(updatedExpenses);
 
       setBudgetsWithAmountLeft((prevBudgets) =>
         prevBudgets.map((b) => {
@@ -140,10 +187,14 @@ const ExpensePage = () => {
       const deletedExpense = expenses.find(
         (expense) => expense.id === expenseId
       );
-      setExpenses(expenses.filter((expense) => expense.id !== expenseId));
-      setContextExpenses(
-        expenses.filter((expense) => expense.id !== expenseId)
+      const updatedExpenses = filterAndSortExpenses(
+        expenses.filter((expense) => expense.id !== expenseId),
+        sortOption,
+        startDate,
+        endDate
       );
+      setExpenses(updatedExpenses);
+      setContextExpenses(updatedExpenses);
 
       if (deletedExpense.budgetId) {
         setBudgetsWithAmountLeft((prevBudgets) =>
@@ -180,13 +231,14 @@ const ExpensePage = () => {
         updatedExpense
       );
 
-      setExpenses(
-        expenses.map((e) => (e.id === expenseId ? response.data : e))
+      const updatedExpenses = filterAndSortExpenses(
+        expenses.map((e) => (e.id === expenseId ? response.data : e)),
+        sortOption,
+        startDate,
+        endDate
       );
-
-      setContextExpenses(
-        expenses.map((e) => (e.id === expenseId ? response.data : e))
-      );
+      setExpenses(updatedExpenses);
+      setContextExpenses(updatedExpenses);
 
       setBudgetsWithAmountLeft((prevBudgets) =>
         prevBudgets.map((b) => {
@@ -234,12 +286,14 @@ const ExpensePage = () => {
         editedExpense
       );
 
-      setExpenses(
-        expenses.map((e) => (e.id === editingExpenseId ? response.data : e))
+      const updatedExpenses = filterAndSortExpenses(
+        expenses.map((e) => (e.id === editingExpenseId ? response.data : e)),
+        sortOption,
+        startDate,
+        endDate
       );
-      setContextExpenses(
-        expenses.map((e) => (e.id === editingExpenseId ? response.data : e))
-      );
+      setExpenses(updatedExpenses);
+      setContextExpenses(updatedExpenses);
 
       setBudgetsWithAmountLeft((prevBudgets) =>
         prevBudgets.map((b) => {
@@ -336,6 +390,44 @@ const ExpensePage = () => {
           <button type="submit">Add Expenses</button>
         </form>
       </div>
+      <div className="date-range">
+        <label htmlFor="start-date">Start Date: </label>
+        <input
+          type="date"
+          id="start-date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+        />
+        <label htmlFor="end-date">End Date: </label>
+        <input
+          type="date"
+          id="end-date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+        />
+        <button
+          onClick={() => {
+            setStartDate("");
+            setEndDate("");
+          }}
+        >
+          Clear Date Range
+        </button>
+      </div>
+      <div className="sorting-options">
+        <label htmlFor="sort-select">Sort by: </label>
+        <select
+          id="sort-select"
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value)}
+        >
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+          <option value="highestAmount">Highest Amount</option>
+          <option value="lowestAmount">Lowest Amount</option>
+          <option value="name">Name</option>
+        </select>
+      </div>
       <div className="expenses-container">
         {expenses.map((expense) => (
           <div key={expense.id} className="expense">
@@ -357,7 +449,7 @@ const ExpensePage = () => {
                 />
                 <input
                   type="date"
-                  value={expense.purchaseDate.split("T"[0])}
+                  value={expense.purchaseDate.split("T")[0]}
                   onChange={(e) =>
                     handleEditChange("purchaseDate", e.target.value)
                   }
@@ -382,30 +474,35 @@ const ExpensePage = () => {
             ) : (
               <>
                 Expense Name: {expense.expenseName} - Expense Amount: $
-                {expense.expenseAmount} - Purchase Date:{" "}
-                {new Date(expense.purchaseDate).toLocaleDateString()} - Budget:
-                <select
-                  value={expense.budgetId || ""}
-                  onChange={(e) =>
-                    handleUpdateExpenseBudget(
-                      expense.id,
-                      e.target.value,
-                      e.target.value
-                        ? e.target.options[e.target.selectedIndex].text.split(
-                            " ("
-                          )[0]
-                        : null
-                    )
-                  }
-                >
-                  <option value="">No Budget</option>
-                  {budgetsWithAmountLeft.map((budget) => (
-                    <option key={budget.id} value={budget.id}>
-                      {budget.budgetName} (Amount Left: $
-                      {budget.amountLeft.toFixed(2)})
-                    </option>
-                  ))}
-                </select>
+                {expense.expenseAmount} - Purchase Date:
+                {new Date(
+                  new Date(expense.purchaseDate).getTime() + 86400000
+                ).toLocaleDateString()}
+                - Budget:
+                {
+                  <select
+                    value={expense.budgetId || ""}
+                    onChange={(e) =>
+                      handleUpdateExpenseBudget(
+                        expense.id,
+                        e.target.value,
+                        e.target.value
+                          ? e.target.options[e.target.selectedIndex].text.split(
+                              " ("
+                            )[0]
+                          : null
+                      )
+                    }
+                  >
+                    <option value="">No Budget</option>
+                    {budgetsWithAmountLeft.map((budget) => (
+                      <option key={budget.id} value={budget.id}>
+                        {budget.budgetName} (Amount Left: $
+                        {budget.amountLeft.toFixed(2)})
+                      </option>
+                    ))}
+                  </select>
+                }
                 <button onClick={() => startEditing(expense.id)}>Edit</button>
                 <button
                   onClick={() => handleDelete(expense.id)}
