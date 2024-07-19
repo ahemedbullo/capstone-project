@@ -73,7 +73,7 @@ const Accounts = () => {
       await axios.delete(
         `http://localhost:3000/accounts/delete_account/${currentProfile}/${accountId}`
       );
-      fetchAccounts(); // Refresh the account list after deletion
+      fetchAccounts();
     } catch (error) {
       console.error("Error deleting account:", error);
     }
