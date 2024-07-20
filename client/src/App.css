@@ -1,12 +1,31 @@
+:root {
+  --primary-color:  #4CAF50;
+  --secondary-color: #2ecc71;
+  --background-color: #f4f4f4;
+  --text-color: #333;
+  --card-background: #ffffff;
+}
 
-
+.app{
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
 .header {
     background-color: var(--primary-color);
     color: white;
-    padding: 1rem;
+    padding: 20px;
     display: flex;
     justify-content: space-between;
+    text-align: center;
     align-items: center;
+  }
+  .header h1{
+    margin: 0;
+  }
+  .main{
+    flex-grow: 1;
+    padding: 20px;
   }
   .logout-btn {
     background-color: #e74c3c;

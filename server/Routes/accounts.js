@@ -15,16 +15,15 @@ const configuration = new Configuration({
 });
 
 const client = new PlaidApi(configuration);
+
 app.post("/create_link_token/:currentProfile", async (req, res) => {
-  // Get the client_user_id by searching for the current user
   const { currentProfile } = req.params;
   const request = {
     user: {
-      // This should correspond to a unique id for the current user.
       client_user_id: currentProfile,
     },
     client_name: "Plaid Test App",
-    products: ["auth"],
+    products: ["auth", "transactions"],
     language: "en",
     country_codes: ["US"],
   };
@@ -32,7 +31,6 @@ app.post("/create_link_token/:currentProfile", async (req, res) => {
     const createTokenResponse = await client.linkTokenCreate(request);
     res.json(createTokenResponse.data);
   } catch (error) {
-    // handle error
     console.error("Error creating Link Token: ", error);
     res.status(500).json({ error: "Failed to create link Token" });
   }
@@ -121,47 +119,93 @@ app.get("/balances/:currentProfile", async (req, res) => {
   }
 });
 
-app.post("/update_balances/:currentProfile", async (req, res) => {
+app.post("/fetch_transactions/:currentProfile", async (req, res) => {
   const { currentProfile } = req.params;
   try {
     const user = await prisma.user.findUnique({
       where: { username: currentProfile },
-      select: { plaidAccessToken: true },
+      select: { plaidAccessToken: true, lastTransactionFetch: true },
     });
 
     if (!user || !user.plaidAccessToken) {
       return res.status(400).json({ error: "No linked accounts found" });
     }
 
-    const balanceResponse = await client.accountsBalanceGet({
-      access_token: user.plaidAccessToken,
-    });
-    const accounts = balanceResponse.data.accounts;
+    const now = new Date();
+    const startDate = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      now.getDate()
+    );
 
-    for (const account of accounts) {
-      await prisma.account.update({
-        where: {
-          username_accountId: {
-            username: currentProfile,
-            accountId: account.account_id,
-          },
-        },
-        data: {
-          balance: account.balances.current,
-          lastUpdated: new Date(),
-        },
-      });
+    const transactionsResponse = await client.transactionsGet({
+      access_token: user.plaidAccessToken,
+      start_date: startDate.toISOString().split("T")[0],
+      end_date: now.toISOString().split("T")[0],
+    });
+
+    const transactions = transactionsResponse.data.transactions;
+    const accounts = transactionsResponse.data.accounts;
+
+    // Create a map of account_id to account name
+    const accountMap = accounts.reduce((acc, account) => {
+      acc[account.account_id] = account.name;
+      return acc;
+    }, {});
+
+    let createdCount = 0;
+    let updatedCount = 0;
+
+    for (const transaction of transactions) {
+      if (transaction.amount > 0) {
+        const accountName =
+          accountMap[transaction.account_id] || "Unknown Account";
+
+        const existingExpense = await prisma.expense.findUnique({
+          where: { transactionId: transaction.transaction_id },
+        });
+
+        if (existingExpense) {
+          await prisma.expense.update({
+            where: { transactionId: transaction.transaction_id },
+            data: {
+              expenseName: transaction.name,
+              expenseAmount: transaction.amount,
+              purchaseDate: new Date(transaction.date),
+              accountName: accountName,
+            },
+          });
+          updatedCount++;
+        } else {
+          await prisma.expense.create({
+            data: {
+              expenseName: transaction.name,
+              expenseAmount: transaction.amount,
+              purchaseDate: new Date(transaction.date),
+              user: { connect: { username: currentProfile } },
+              transactionId: transaction.transaction_id,
+              accountName: accountName,
+            },
+          });
+          createdCount++;
+        }
+      }
     }
 
-    const updatedAccounts = await prisma.account.findMany({
+    await prisma.user.update({
       where: { username: currentProfile },
-      orderBy: { lastUpdated: "desc" },
+      data: { lastTransactionFetch: now },
     });
 
-    res.json({ success: true, accounts: updatedAccounts });
+    res.json({
+      success: true,
+      expensesCreated: createdCount,
+      expensesUpdated: updatedCount,
+      accountsFetched: accounts.length,
+    });
   } catch (error) {
-    console.error("Error updating balances: ", error);
-    res.status(500).json({ error: "Failed to update balances" });
+    console.error("Error fetching transactions: ", error);
+    res.status(500).json({ error: "Failed to fetch transactions" });
   }
 });
 
@@ -184,20 +228,17 @@ app.delete("/delete_account/:currentProfile/:accountId", async (req, res) => {
   }
 });
 
-app.put("/rename_account/:currentProfile/:accountId", async (req, res) => {
-  const { currentProfile, accountId } = req.params;
-  const { newName } = req.body;
+app.get("/last_transaction_date/:currentProfile", async (req, res) => {
+  const { currentProfile } = req.params;
   try {
-    const updatedAccount = await prisma.account.update({
-      where: {
-        username_accountId: { username: currentProfile, accountId: accountId },
-      },
-      data: { name: newName },
+    const user = await prisma.user.findUnique({
+      where: { username: currentProfile },
+      select: { lastTransactionFetch: true },
     });
-    res.json({ success: true, account: updatedAccount });
+    res.json({ lastTransactionFetch: user.lastTransactionFetch });
   } catch (error) {
-    console.error("Error renaming account: ", error);
-    res.status(500).json({ error: "Failed to rename account" });
+    console.error("Error fetching last transaction date:", error);
+    res.status(500).json({ error: "Failed to fetch last transaction date" });
   }
 });
 

@@ -21,6 +21,7 @@ model User {
   plaidAccessToken String?
   plaidItem String?
   accounts Account[]
+  lastTransactionFetch DateTime?
 }
 
 model Account {
@@ -48,9 +49,12 @@ model Expense {
   id         Int     @id @default(autoincrement())
   expenseName  String
   expenseAmount Float 
+  purchaseDate  DateTime
   userId       String
   user         User     @relation(fields: [userId], references: [username])
   budgetId Int?
   budget Budget?         @relation(fields: [budgetId], references: [id])
   budgetName String?
+  transactionId String? @unique
+  accountName String?
 }
