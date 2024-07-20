@@ -8,7 +8,11 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Modal = ({ budget, onClose, currentProfile }) => {
   const [expenses, setExpenses] = useState([]);
-  const [newExpense, setNewExpense] = useState({ expenseName: "", amount: "" });
+  const [newExpense, setNewExpense] = useState({
+    expenseName: "",
+    amount: "",
+    purchaseDate: new Date().toISOString().split("T")[0],
+  });
 
   useEffect(() => {
     fetchBudgetExpenses();
@@ -34,10 +38,15 @@ const Modal = ({ budget, onClose, currentProfile }) => {
           ...newExpense,
           budgetId: budget.id,
           budgetName: budget.budgetName,
+          purchaseDate: newExpense.purchaseDate, // Ensure purchaseDate is included
         }
       );
       setExpenses([...expenses, response.data]);
-      setNewExpense({ expenseName: "", amount: "" });
+      setNewExpense({
+        expenseName: "",
+        amount: "",
+        purchaseDate: new Date().toISOString().split("T")[0], // Reset purchaseDate to today's date
+      });
     } catch (error) {
       console.error("Error adding expense:", error);
     }
@@ -94,7 +103,10 @@ const Modal = ({ budget, onClose, currentProfile }) => {
           {expenses.map((expense) => (
             <li key={expense.id}>
               {expense.expenseName}: $
-              {parseFloat(expense.expenseAmount).toFixed(2)}
+              {parseFloat(expense.expenseAmount).toFixed(2)} - Purchase Date:
+              {new Date(
+                new Date(expense.purchaseDate).getTime() + 86400000
+              ).toLocaleDateString()}
             </li>
           ))}
         </ul>
@@ -115,6 +127,17 @@ const Modal = ({ budget, onClose, currentProfile }) => {
             value={newExpense.amount}
             onChange={(e) =>
               setNewExpense({ ...newExpense, amount: e.target.value })
+            }
+            required
+          />
+          <input
+            type="date"
+            value={newExpense.purchaseDate}
+            onChange={(e) =>
+              setNewExpense({
+                ...newExpense,
+                purchaseDate: e.target.value,
+              })
             }
             required
           />

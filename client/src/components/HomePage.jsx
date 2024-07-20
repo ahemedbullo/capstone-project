@@ -18,9 +18,11 @@ const HomePage = () => {
     <>
       <div className="homepage">
         <main className="main-content">
-          <aside className="sidebar">
-            <Accounts />
-          </aside>
+          {
+            <aside className="sidebar">
+              <Accounts />
+            </aside>
+          }
           <section className="budget-expense-container">
             <div className="card budget-card">
               <h2>Budgets</h2>

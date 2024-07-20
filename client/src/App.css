@@ -1,3 +1,10 @@
+:root {
+  --primary-color:  #4CAF50;
+  --secondary-color: #2ecc71;
+  --background-color: #f4f4f4;
+  --text-color: #333;
+  --card-background: #ffffff;
+}
 
 .app{
   display: flex;

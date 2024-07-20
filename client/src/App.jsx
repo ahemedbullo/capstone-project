@@ -14,6 +14,7 @@ import ExpensePage from "./components/ExpensePage.jsx";
 import BudgetPage from "./components/BudgetPage.jsx";
 import Accounts from "./components/Accounts.jsx";
 import NavBar from "./components/NavBar.jsx";
+import Profile from "./components/Profile.jsx";
 
 function App() {
   const [currentProfile, setCurrentProfile] = useState(null);
@@ -85,6 +86,7 @@ function App() {
                       <Route path="/expenses" element={<ExpensePage />} />
                       <Route path="/budgets" element={<BudgetPage />} />
                       <Route path="/accounts" element={<Accounts />} />
+                      <Route path="/profile" element={<Profile />} />
                     </>
                   ) : (
                     <>
