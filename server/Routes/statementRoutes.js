@@ -44,8 +44,8 @@ function preprocessText(text) {
 function parseExpensesFromText(text) {
   const expenses = [];
   const lines = text.split("\n");
-  const datePattern = /(\d{2}\/\d{2})/; // Matches MM/DD format
-  const amountPattern = /(-?\$?\d{1,3}(?:,?\d{3})*\.\d{2})/; // Matches currency amounts
+  const datePattern = /(\d{2}\/\d{2})/;
+  const amountPattern = /(-?\$?\d{1,3}(?:,?\d{3})*\.\d{2})/;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
@@ -64,18 +64,15 @@ function parseExpensesFromText(text) {
         .replace(amountMatch[0], "")
         .trim();
 
-      // If description is empty or very short, check the previous line
       if (description.length < 3 && i > 0) {
         description = lines[i - 1].trim();
       }
 
-      // Remove any leading location information (e.g., "REDWOOD CITY CA")
       description = description.replace(/\s+[A-Z]{2}\s*$/, "");
 
-      // Only add if it's an expense (positive amount)
       if (amount > 0) {
         expenses.push({
-          date: `${date}/24`, // Assuming current year is 2024
+          date: `${date}/24`,
           amount: amount,
           description: description,
         });
@@ -102,7 +99,6 @@ app.post(
       const cleanedText = preprocessText(pdfData.text);
       const parsedExpenses = parseExpensesFromText(cleanedText);
 
-      // Store parsed expenses temporarily
       await prisma.tempExpense.deleteMany({
         where: { username: currentProfile },
       });
@@ -114,7 +110,6 @@ app.post(
         })),
       });
 
-      // Remove the temporary file
       fs.unlinkSync(filePath);
 
       res.json({
@@ -147,7 +142,6 @@ app.post("/confirm-expenses/:currentProfile", async (req, res) => {
   const { confirmedExpenses } = req.body;
 
   try {
-    // Add confirmed expenses to the main expenses table
     await prisma.expense.createMany({
       data: confirmedExpenses.map((expense) => ({
         expenseName: expense.description,
@@ -157,7 +151,6 @@ app.post("/confirm-expenses/:currentProfile", async (req, res) => {
       })),
     });
 
-    // Clear temporary expenses
     await prisma.tempExpense.deleteMany({
       where: { username: currentProfile },
     });
