@@ -4,6 +4,7 @@ import axios from "axios";
 import "./Styles/ExpensePage.css";
 import { BudgetContext } from "../BudgetContext.js";
 import { ExpenseContext } from "../ExpenseContext.js";
+import StatementUpload from "./StatementUpload.jsx";
 
 const ExpensePage = () => {
   const [expenses, setExpenses] = useState([]);
@@ -315,6 +316,7 @@ const ExpensePage = () => {
 
   return (
     <>
+      <StatementUpload />
       <div className="create-expense-box">
         <h2>Add Expenses</h2>
         <form onSubmit={handleSubmit}>

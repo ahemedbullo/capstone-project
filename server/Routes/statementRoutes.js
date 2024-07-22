@@ -25,10 +25,14 @@ const upload = multer({ storage: storage });
 
 function preprocessText(text) {
   text = text.replace(/Page \d+ of \d+/gi, "");
-  text = text.replace(/Statement Period:.+/gi, "");
-  text = text.replace(/End of Statement/gi, "");
-  text = text.replace(/Balance [Ff]orward.+/g, "");
-  text = text.replace(/Previous [Bb]alance.+/g, "");
+  text = text.replace(/Statement Date:.+/gi, "");
+  text = text.replace(/ACCOUNT SUMMARY/g, "");
+  text = text.replace(/ACCOUNT ACTIVITY/g, "");
+  text = text.replace(
+    /Date of\s+Transaction\s+Merchant Name or Transaction Description/g,
+    ""
+  );
+  text = text.replace(/\$ Amount/g, "");
   text = text
     .split("\n")
     .filter((line) => !line.match(/^(Date|Description|Amount)/i))
@@ -40,42 +44,42 @@ function preprocessText(text) {
 function parseExpensesFromText(text) {
   const expenses = [];
   const lines = text.split("\n");
-  const datePatterns = [
-    /(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})/,
-    /(\d{4}[-/]\d{1,2}[-/]\d{1,2})/,
-    /(\w{3,9}\s+\d{1,2},?\s+\d{4})/,
-  ];
-  const amountPattern = /[-]?\$?(\d{1,3}(?:,?\d{3})*(?:\.\d{2})?)/;
+  const datePattern = /(\d{2}\/\d{2})/; // Matches MM/DD format
+  const amountPattern = /(-?\$?\d{1,3}(?:,?\d{3})*\.\d{2})/; // Matches currency amounts
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
     if (line === "") continue;
 
-    let date = null;
-    let amount = null;
-    let description = "";
-
-    for (const pattern of datePatterns) {
-      const dateMatch = line.match(pattern);
-      if (dateMatch) {
-        date = dateMatch[1];
-        break;
-      }
-    }
-
+    const dateMatch = line.match(datePattern);
     const amountMatch = line.match(amountPattern);
-    if (amountMatch) {
-      amount = parseFloat(amountMatch[1].replace(/,/g, ""));
-    }
 
-    if (date && amount !== null) {
-      description = line.replace(date, "").replace(amountMatch[0], "").trim();
-      if (description === "" && i + 1 < lines.length) {
-        description = lines[i + 1].trim();
-        i++;
+    if (dateMatch && amountMatch) {
+      const date = dateMatch[1];
+      const amount = parseFloat(
+        amountMatch[1].replace("$", "").replace(",", "")
+      );
+      let description = line
+        .replace(dateMatch[0], "")
+        .replace(amountMatch[0], "")
+        .trim();
+
+      // If description is empty or very short, check the previous line
+      if (description.length < 3 && i > 0) {
+        description = lines[i - 1].trim();
       }
-      description = description.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, "");
-      expenses.push({ date, amount, description });
+
+      // Remove any leading location information (e.g., "REDWOOD CITY CA")
+      description = description.replace(/\s+[A-Z]{2}\s*$/, "");
+
+      // Only add if it's an expense (positive amount)
+      if (amount > 0) {
+        expenses.push({
+          date: `${date}/24`, // Assuming current year is 2024
+          amount: amount,
+          description: description,
+        });
+      }
     }
   }
 
@@ -110,14 +114,8 @@ app.post(
         })),
       });
 
-      // Save the file information in the database
-      await prisma.uploadedStatement.create({
-        data: {
-          filename: req.file.originalname,
-          filePath: filePath,
-          userId: currentProfile,
-        },
-      });
+      // Remove the temporary file
+      fs.unlinkSync(filePath);
 
       res.json({
         message: "Statement parsed successfully",
@@ -125,7 +123,7 @@ app.post(
       });
     } catch (error) {
       console.error("Error parsing PDF:", error);
-      res.status(500).send("Error parsing PDF");
+      res.status(500).send("Error parsing PDF: " + error.message);
     }
   }
 );
