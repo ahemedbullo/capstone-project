@@ -151,7 +151,7 @@ app.post("/confirm-expenses/:currentProfile", async (req, res) => {
     await prisma.expense.createMany({
       data: confirmedExpenses.map((expense) => ({
         expenseName: expense.description,
-        expenseAmount: expense.amount,
+        expenseAmount: parseFloat(expense.amount),
         purchaseDate: new Date(expense.date),
         userId: currentProfile,
       })),

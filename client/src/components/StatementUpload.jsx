@@ -1,12 +1,13 @@
 import React, { useState, useContext } from "react";
 import axios from "axios";
 import { UserContext } from "../UserContext.js";
+import ConfirmStatementModal from "./ConfirmStatementModal.jsx";
 
 const StatementUpload = () => {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [parsedExpenses, setParsedExpenses] = useState([]);
-  const [reviewing, setReviewing] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { currentProfile } = useContext(UserContext);
 
   const handleFileChange = (e) => {
@@ -36,7 +37,6 @@ const StatementUpload = () => {
       alert(
         `Statement parsed successfully. ${response.data.count} expenses found.`
       );
-      setReviewing(true);
       fetchParsedExpenses();
     } catch (error) {
       console.error("Error uploading and parsing statement:", error);
@@ -52,20 +52,21 @@ const StatementUpload = () => {
         `http://localhost:3000/statement/review-expenses/${currentProfile}`
       );
       setParsedExpenses(response.data);
+      setIsModalOpen(true);
     } catch (error) {
       console.error("Error fetching parsed expenses:", error);
       alert("An error occurred while fetching parsed expenses.");
     }
   };
 
-  const handleConfirm = async () => {
+  const handleConfirm = async (confirmedExpenses) => {
     try {
       await axios.post(
         `http://localhost:3000/statement/confirm-expenses/${currentProfile}`,
-        { confirmedExpenses: parsedExpenses }
+        { confirmedExpenses }
       );
       alert("Expenses confirmed and added successfully.");
-      setReviewing(false);
+      setIsModalOpen(false);
       setParsedExpenses([]);
     } catch (error) {
       console.error("Error confirming expenses:", error);
@@ -77,22 +78,16 @@ const StatementUpload = () => {
     <div className="statement-upload">
       <h2>Upload Monthly Statement</h2>
       <input type="file" accept=".pdf" onChange={handleFileChange} />
-      <button onClick={handleUpload} disabled={uploading || reviewing}>
+      <button onClick={handleUpload} disabled={uploading}>
         {uploading ? "Processing..." : "Upload and Parse"}
       </button>
-      {reviewing && (
-        <div className="parsed-expenses">
-          <h3>Review Parsed Expenses:</h3>
-          <ul>
-            {parsedExpenses.map((expense, index) => (
-              <li key={index}>
-                {expense.date}: {expense.description} - $
-                {expense.amount.toFixed(2)}
-              </li>
-            ))}
-          </ul>
-          <button onClick={handleConfirm}>Confirm Expenses</button>
-        </div>
+
+      {isModalOpen && (
+        <ConfirmStatementModal
+          expenses={parsedExpenses}
+          onConfirm={handleConfirm}
+          onClose={() => setIsModalOpen(false)}
+        />
       )}
     </div>
   );
