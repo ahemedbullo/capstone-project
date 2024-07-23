@@ -55,4 +55,23 @@ app.delete("/:currentProfile/:budgetId", async (req, res) => {
   }
 });
 
+app.put("/:currentProfile/:budgetId", async (req, res) => {
+  const { currentProfile, budgetId } = req.params;
+  const { budgetName, budgetAmount } = req.body;
+
+  try {
+    const updatedBudget = await prisma.budget.update({
+      where: { id: parseInt(budgetId), userId: currentProfile },
+      data: {
+        budgetName,
+        budgetAmount: parseFloat(budgetAmount),
+      },
+    });
+    res.status(200).json(updatedBudget);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to update budget" });
+  }
+});
+
 module.exports = app;
