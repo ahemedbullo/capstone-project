@@ -13,9 +13,12 @@ const Modal = ({ budget, onClose, currentProfile }) => {
     amount: "",
     purchaseDate: new Date().toISOString().split("T")[0],
   });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [allExpenses, setAllExpenses] = useState([]);
 
   useEffect(() => {
     fetchBudgetExpenses();
+    fetchAllExpenses();
   }, []);
 
   const fetchBudgetExpenses = async () => {
@@ -29,6 +32,17 @@ const Modal = ({ budget, onClose, currentProfile }) => {
     }
   };
 
+  const fetchAllExpenses = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/expenses/${currentProfile}`
+      );
+      setAllExpenses(response.data);
+    } catch (error) {
+      console.error("Error fetching all expenses:", error);
+    }
+  };
+
   const handleAddExpense = async (e) => {
     e.preventDefault();
     try {
@@ -38,17 +52,30 @@ const Modal = ({ budget, onClose, currentProfile }) => {
           ...newExpense,
           budgetId: budget.id,
           budgetName: budget.budgetName,
-          purchaseDate: newExpense.purchaseDate, // Ensure purchaseDate is included
+          purchaseDate: newExpense.purchaseDate,
         }
       );
       setExpenses([...expenses, response.data]);
       setNewExpense({
         expenseName: "",
         amount: "",
-        purchaseDate: new Date().toISOString().split("T")[0], // Reset purchaseDate to today's date
+        purchaseDate: new Date().toISOString().split("T")[0],
       });
     } catch (error) {
       console.error("Error adding expense:", error);
+    }
+  };
+
+  const handleAddExistingExpense = async (expenseId) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/expenses/${currentProfile}/${expenseId}`,
+        { budgetId: budget.id, budgetName: budget.budgetName }
+      );
+      setExpenses([...expenses, response.data]);
+      setAllExpenses(allExpenses.filter((e) => e.id !== expenseId));
+    } catch (error) {
+      console.error("Error adding existing expense to budget:", error);
     }
   };
 
@@ -76,6 +103,12 @@ const Modal = ({ budget, onClose, currentProfile }) => {
       onClose();
     }
   };
+
+  const filteredExpenses = allExpenses.filter(
+    (expense) =>
+      expense.expenseName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      !expense.budgetId
+  );
 
   return (
     <div className="modal-overlay" onClick={handleOverlayClick}>
@@ -143,6 +176,28 @@ const Modal = ({ budget, onClose, currentProfile }) => {
           />
           <button type="submit">Add Expense</button>
         </form>
+
+        <h3>Add Existing Expense to Budget:</h3>
+        <input
+          type="text"
+          placeholder="Search expenses..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <ul className="expense-list">
+          {filteredExpenses.map((expense) => (
+            <li key={expense.id}>
+              {expense.expenseName}: $
+              {parseFloat(expense.expenseAmount).toFixed(2)} - Purchase Date:{" "}
+              {new Date(
+                new Date(expense.purchaseDate).getTime() + 86400000
+              ).toLocaleDateString()}
+              <button onClick={() => handleAddExistingExpense(expense.id)}>
+                Add to Budget
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );

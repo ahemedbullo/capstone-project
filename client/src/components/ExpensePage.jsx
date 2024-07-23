@@ -26,20 +26,20 @@ const ExpensePage = () => {
   const [sortOption, setSortOption] = useState("newest");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const filterAndSortExpenses = (expenses, option, start, end) => {
+  const filterAndSortExpenses = (expenses, option, start, end, search) => {
     return expenses
       .filter((expense) => {
-        if (!start && !end) return true;
+        if (!start && !end && !search) return true;
         const expenseDate = new Date(expense.purchaseDate);
-        if (start && end) {
-          return expenseDate >= new Date(start) && expenseDate <= new Date(end);
-        } else if (start) {
-          return expenseDate >= new Date(start);
-        } else if (end) {
-          return expenseDate <= new Date(end);
-        }
-        return true;
+        const dateFilter =
+          (!start || expenseDate >= new Date(start)) &&
+          (!end || expenseDate <= new Date(end));
+        const searchFilter =
+          !search ||
+          expense.expenseName.toLowerCase().includes(search.toLowerCase());
+        return dateFilter && searchFilter;
       })
       .sort((a, b) => {
         switch (option) {
@@ -58,7 +58,6 @@ const ExpensePage = () => {
         }
       });
   };
-
   useEffect(() => {
     const fetchBudgetsAndExpenses = async () => {
       try {
@@ -72,7 +71,8 @@ const ExpensePage = () => {
           expensesData,
           sortOption,
           startDate,
-          endDate
+          endDate,
+          searchTerm
         );
         setExpenses(filteredAndSortedExpenses);
         setContextExpenses(filteredAndSortedExpenses);
@@ -93,7 +93,14 @@ const ExpensePage = () => {
       }
     };
     fetchBudgetsAndExpenses();
-  }, [currentProfile, contextBudgets, sortOption, startDate, endDate]);
+  }, [
+    currentProfile,
+    contextBudgets,
+    sortOption,
+    startDate,
+    endDate,
+    searchTerm,
+  ]);
 
   const handleExpenseChange = (expenseId, field, value) => {
     setNewExpenses(
@@ -429,6 +436,14 @@ const ExpensePage = () => {
           <option value="lowestAmount">Lowest Amount</option>
           <option value="name">Name</option>
         </select>
+      </div>
+      <div className="search-container">
+        <input
+          type="text"
+          placeholder="Search expenses..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
       </div>
       <div className="expenses-container">
         {expenses.map((expense) => (
