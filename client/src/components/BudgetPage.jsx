@@ -17,6 +17,8 @@ const BudgetPage = () => {
   const { contextBudgets, setContextBudgets } = useContext(BudgetContext);
   const { contextExpenses } = useContext(ExpenseContext);
   const { contextAccounts } = useContext(AccountsContext); //todo use this to get total balance
+  const [editingBudget, setEditingBudget] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchBudgetsWithExpenses();
@@ -52,6 +54,7 @@ const BudgetPage = () => {
       console.error("Error fetching budgets and expenses:", error);
     }
   };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     const newBudget = { budgetName, budgetAmount: parseFloat(budgetAmount) };
@@ -92,6 +95,47 @@ const BudgetPage = () => {
     }
   };
 
+  const handleEdit = (budget) => {
+    setEditingBudget({
+      id: budget.id,
+      budgetName: budget.budgetName,
+      budgetAmount: budget.budgetAmount.toString(),
+    });
+  };
+
+  const handleUpdate = async (event, budgetId) => {
+    event.preventDefault();
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/budgets/${currentProfile}/${budgetId}`,
+        {
+          budgetName: editingBudget.budgetName,
+          budgetAmount: parseFloat(editingBudget.budgetAmount),
+        }
+      );
+      const updatedBudget = response.data;
+      const updatedBudgets = budgetsWithExpenses.map((budget) =>
+        budget.id === updatedBudget.id
+          ? {
+              ...updatedBudget,
+              amountLeft: updatedBudget.budgetAmount - budget.totalExpenses,
+              totalExpenses: budget.totalExpenses,
+            }
+          : budget
+      );
+      setBudgetsWithExpenses(updatedBudgets);
+      setBudgets(updatedBudgets);
+      setContextBudgets(updatedBudgets);
+      setEditingBudget(null);
+    } catch (error) {
+      console.error("Error updating budget:", error);
+    }
+  };
+
+  const filteredBudgets = budgetsWithExpenses.filter((budget) =>
+    budget.budgetName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <>
       <div className="budget-page">
@@ -115,29 +159,78 @@ const BudgetPage = () => {
             <button type="submit">Create Budget</button>
           </form>
         </div>
+        <div className="budget-search">
+          <input
+            type="text"
+            placeholder="Search budgets..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
         <div className="budget-list">
-          {budgetsWithExpenses.map((budget) => (
+          {filteredBudgets.map((budget) => (
             <div key={budget.id} className="budget-item">
-              <h4>{budget.budgetName}</h4>
-              <div className="budget-details">
-                <p>Total: ${budget.budgetAmount}</p>
-                <p>Spent: ${budget.totalExpenses.toFixed(2)}</p>
-                <p>Left: ${budget.amountLeft.toFixed(2)}</p>
-              </div>
-              <div className="budget-progress">
-                <div
-                  className="progress-bar"
-                  style={{
-                    width: `${
-                      (budget.totalExpenses / budget.budgetAmount) * 100
-                    }%`,
-                  }}
-                ></div>
-              </div>
-              <div className="budget-actions">
-                <button onClick={() => setModalBudget(budget)}>Details</button>
-                <button onClick={() => handleDelete(budget.id)}>Delete</button>
-              </div>
+              {editingBudget && editingBudget.id === budget.id ? (
+                <form
+                  onSubmit={(e) => handleUpdate(e, budget.id)}
+                  className="inline-edit-form"
+                >
+                  <input
+                    type="text"
+                    value={editingBudget.budgetName}
+                    onChange={(e) =>
+                      setEditingBudget({
+                        ...editingBudget,
+                        budgetName: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                  <input
+                    type="number"
+                    value={editingBudget.budgetAmount}
+                    onChange={(e) =>
+                      setEditingBudget({
+                        ...editingBudget,
+                        budgetAmount: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                  <button type="submit">Save</button>
+                  <button type="button" onClick={() => setEditingBudget(null)}>
+                    Cancel
+                  </button>
+                </form>
+              ) : (
+                <>
+                  <h4>{budget.budgetName}</h4>
+                  <div className="budget-details">
+                    <p>Total: ${budget.budgetAmount}</p>
+                    <p>Spent: ${budget.totalExpenses.toFixed(2)}</p>
+                    <p>Left: ${budget.amountLeft.toFixed(2)}</p>
+                  </div>
+                  <div className="budget-progress">
+                    <div
+                      className="progress-bar"
+                      style={{
+                        width: `${
+                          (budget.totalExpenses / budget.budgetAmount) * 100
+                        }%`,
+                      }}
+                    ></div>
+                  </div>
+                  <div className="budget-actions">
+                    <button onClick={() => setModalBudget(budget)}>
+                      Details
+                    </button>
+                    <button onClick={() => handleEdit(budget)}>Edit</button>
+                    <button onClick={() => handleDelete(budget.id)}>
+                      Delete
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           ))}
         </div>

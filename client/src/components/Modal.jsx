@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import "./Styles/Modal.css";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { ExpenseContext } from "../ExpenseContext.js";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -15,6 +16,7 @@ const Modal = ({ budget, onClose, currentProfile }) => {
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [allExpenses, setAllExpenses] = useState([]);
+  const { setContextExpenses } = useContext(ExpenseContext);
 
   useEffect(() => {
     fetchBudgetExpenses();
@@ -79,6 +81,27 @@ const Modal = ({ budget, onClose, currentProfile }) => {
     }
   };
 
+  const handleRemoveFromBudget = async (expenseId) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/expenses/${currentProfile}/${expenseId}`,
+        { budgetId: null, budgetName: null }
+      );
+
+      setExpenses(expenses.filter((expense) => expense.id !== expenseId));
+
+      setContextExpenses((prevExpenses) =>
+        prevExpenses.map((exp) =>
+          exp.id === expenseId
+            ? { ...exp, budgetId: null, budgetName: null }
+            : exp
+        )
+      );
+    } catch (error) {
+      console.error("Error removing expense from budget:", error);
+    }
+  };
+
   const prepareChartData = (budget, totalExpenses) => {
     const remainingBudget = budget.budgetAmount - totalExpenses;
     return {
@@ -140,6 +163,9 @@ const Modal = ({ budget, onClose, currentProfile }) => {
               {new Date(
                 new Date(expense.purchaseDate).getTime() + 86400000
               ).toLocaleDateString()}
+              <button onClick={() => handleRemoveFromBudget(expense.id)}>
+                Remove from Budget
+              </button>
             </li>
           ))}
         </ul>
