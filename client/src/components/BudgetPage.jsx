@@ -18,6 +18,7 @@ const BudgetPage = () => {
   const { contextExpenses } = useContext(ExpenseContext);
   const { contextAccounts } = useContext(AccountsContext); //todo use this to get total balance
   const [editingBudget, setEditingBudget] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchBudgetsWithExpenses();
@@ -131,6 +132,10 @@ const BudgetPage = () => {
     }
   };
 
+  const filteredBudgets = budgetsWithExpenses.filter((budget) =>
+    budget.budgetName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <>
       <div className="budget-page">
@@ -154,8 +159,16 @@ const BudgetPage = () => {
             <button type="submit">Create Budget</button>
           </form>
         </div>
+        <div className="budget-search">
+          <input
+            type="text"
+            placeholder="Search budgets..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
         <div className="budget-list">
-          {budgetsWithExpenses.map((budget) => (
+          {filteredBudgets.map((budget) => (
             <div key={budget.id} className="budget-item">
               {editingBudget && editingBudget.id === budget.id ? (
                 <form
