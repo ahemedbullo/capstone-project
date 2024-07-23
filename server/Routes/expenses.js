@@ -109,18 +109,16 @@ app.put("/:currentProfile/:expenseId", async (req, res) => {
   const { budgetId, budgetName, expenseName, expenseAmount, purchaseDate } =
     req.body;
   try {
-    let updateData = {
-      expenseName,
-      expenseAmount: parseFloat(expenseAmount),
-      purchaseDate: new Date(purchaseDate),
-      budgetName,
-    };
+    let updateData = { budgetName };
     if (budgetId) {
       updateData.budget = { connect: { id: parseInt(budgetId) } };
     } else {
       updateData.budget = { disconnect: true };
       updateData.budgetName = null;
     }
+    if (expenseName) updateData.expenseName = expenseName;
+    if (expenseAmount) updateData.expenseAmount = parseFloat(expenseAmount);
+    if (purchaseDate) updateData.purchaseDate = new Date(purchaseDate);
     const updatedExpense = await prisma.expense.update({
       where: { id: parseInt(expenseId), userId: currentProfile },
       data: updateData,
