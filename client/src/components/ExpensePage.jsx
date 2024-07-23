@@ -100,7 +100,6 @@ const ExpensePage = () => {
     startDate,
     endDate,
     searchTerm,
-    contextExpenses,
   ]);
 
   const handleExpenseChange = (expenseId, field, value) => {
