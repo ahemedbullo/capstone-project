@@ -88,10 +88,8 @@ const Modal = ({ budget, onClose, currentProfile }) => {
         { budgetId: null, budgetName: null }
       );
 
-      // Update local state
       setExpenses(expenses.filter((expense) => expense.id !== expenseId));
 
-      // Update context
       setContextExpenses((prevExpenses) =>
         prevExpenses.map((exp) =>
           exp.id === expenseId
