@@ -22,7 +22,10 @@ model User {
   plaidItem String?
   accounts Account[]
   lastTransactionFetch DateTime?
-  uploadedStatements UploadedStatements[]
+  uploadedStatements UploadedStatement[]
+  financialGoals   String?
+  monthlySavingsTarget Float?
+  annualIncomeTarget Float?
 }
 
 model Account {
@@ -30,11 +33,12 @@ model Account {
   username String
   user User   @relation(fields: [userId], references: [username])
   userId String
-  accountId String
+  accountId String @unique
   name String
   type String
   balance Float
   lastUpdated DateTime @default(now())
+  balanceHistory  BalanceHistory[]
   @@unique([username, accountId])
 }
 model Budget {
@@ -68,7 +72,7 @@ model TempExpense {
   amount Float
 }
 
-model UploadedStatements {
+model UploadedStatement {
   id Int @id @default(autoincrement())
   filename String
   filePath String
@@ -76,3 +80,11 @@ model UploadedStatements {
   userId String
   user User  @relation(fields: [userId], references: [username])
 }
+
+model BalanceHistory { 
+  id Int @id @default(autoincrement()) 
+  accountId String?
+  balance Float 
+  date DateTime @default(now()) 
+   account Account? @relation(fields: [accountId], references: [accountId])
+  }

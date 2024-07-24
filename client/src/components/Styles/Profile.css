@@ -1,0 +1,94 @@
+.profile-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  .profile-page h1, .profile-page h2, .profile-page h3 {
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  .profile-page form {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+  }
+  
+  .profile-page form div {
+    margin-bottom: 15px;
+  }
+  
+  .profile-page label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  .profile-page input[type="number"],
+  .profile-page input[type="date"],
+  .profile-page textarea,
+  .profile-page select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  .profile-page textarea {
+    height: 100px;
+    resize: vertical;
+  }
+  
+  .profile-page button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  .profile-page button:hover {
+    background-color: #45a049;
+  }
+  
+  .balance-history {
+    background-color: #f0f0f0;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+  }
+  
+  .balance-history ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .balance-history li {
+    background-color: white;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  .linked-accounts {
+    margin-top: 30px;
+  }
+  
+  @media (max-width: 600px) {
+    .profile-page {
+      padding: 10px;
+    }
+    
+    .profile-page form {
+      padding: 15px;
+    }
+  }
+  
+  

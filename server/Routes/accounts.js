@@ -60,7 +60,6 @@ app.post("/exchange_public_token/:currentProfile", async function (req, res) {
       access_token: accessToken,
     });
     const accounts = balanceResponse.data.accounts;
-
     for (const account of accounts) {
       await prisma.account.upsert({
         where: {
@@ -74,6 +73,9 @@ app.post("/exchange_public_token/:currentProfile", async function (req, res) {
           type: account.type,
           balance: account.balances.current,
           lastUpdated: new Date(),
+          balanceHistory: {
+            create: { balance: account.balances.current, date: new Date() },
+          },
         },
         create: {
           username: currentProfile,
@@ -81,8 +83,9 @@ app.post("/exchange_public_token/:currentProfile", async function (req, res) {
           name: account.name,
           type: account.type,
           balance: account.balances.current,
-          user: {
-            connect: { username: currentProfile },
+          user: { connect: { username: currentProfile } },
+          balanceHistory: {
+            create: { balance: account.balances.current, date: new Date() },
           },
         },
       });
@@ -239,6 +242,43 @@ app.get("/last_transaction_date/:currentProfile", async (req, res) => {
   } catch (error) {
     console.error("Error fetching last transaction date:", error);
     res.status(500).json({ error: "Failed to fetch last transaction date" });
+  }
+});
+
+app.post("/manual-balance-update/:currentProfile", async (req, res) => {
+  const { currentProfile } = req.params;
+  const { accountId, newBalance, date } = req.body;
+  try {
+    const updatedAccount = await prisma.account.update({
+      where: {
+        username_accountId: { username: currentProfile, accountId: accountId },
+      },
+      data: {
+        balance: parseFloat(newBalance),
+        lastUpdated: new Date(date),
+        balanceHistory: {
+          create: { balance: parseFloat(newBalance), date: new Date(date) },
+        },
+      },
+    });
+    res.json({ success: true, account: updatedAccount });
+  } catch (error) {
+    console.error("Error updating balance manually:", error);
+    res.status(500).json({ error: "Failed to update balance manually" });
+  }
+});
+
+app.get("/balance-history/:currentProfile/:accountId", async (req, res) => {
+  const { currentProfile, accountId } = req.params;
+  try {
+    const balanceHistory = await prisma.balanceHistory.findMany({
+      where: { account: { username: currentProfile, accountId: accountId } },
+      orderBy: { date: "asc" },
+    });
+    res.json(balanceHistory);
+  } catch (error) {
+    console.error("Error fetching balance history:", error);
+    res.status(500).json({ error: "Failed to fetch balance history" });
   }
 });
 
