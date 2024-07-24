@@ -8,9 +8,13 @@ const Profile = () => {
   const [financialGoals, setFinancialGoals] = useState("");
   const [monthlySavingsTarget, setMonthlySavingsTarget] = useState("");
   const [annualIncomeTarget, setAnnualIncomeTarget] = useState("");
+  const [accounts, setAccounts] = useState([]);
+  const [selectedAccount, setSelectedAccount] = useState("");
+  const [newBalance, setNewBalance] = useState("");
 
   useEffect(() => {
     fetchUserData();
+    fetchAccounts();
   }, [currentProfile]);
 
   const fetchUserData = async () => {
@@ -47,10 +51,37 @@ const Profile = () => {
     }
   };
 
+  const fetchAccounts = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/accounts/balances/${currentProfile}`
+      );
+      setAccounts(response.data.accounts);
+    } catch (error) {
+      console.error("Error fetching accounts:", error);
+    }
+  };
+
+  const handleManualBalanceUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(
+        `http://localhost:3000/accounts/manual-balance-update/${currentProfile}`,
+        { accountId: selectedAccount, newBalance: newBalance }
+      );
+      alert("Balance updated successfully!");
+      fetchAccounts();
+      setSelectedAccount("");
+      setNewBalance("");
+    } catch (error) {
+      console.error("Error updating balance:", error);
+      alert("Failed to update balance. Please try again.");
+    }
+  };
+
   return (
     <div className="profile-page">
       <h1>Your Financial Profile</h1>
-
       <form onSubmit={handleUserDataSubmit}>
         <div>
           <label htmlFor="financialGoals">Financial Goals:</label>
@@ -86,7 +117,30 @@ const Profile = () => {
 
         <button type="submit">Update User Data</button>
       </form>
-
+      <h2>Manual Balance Update</h2>
+      <form onSubmit={handleManualBalanceUpdate}>
+        <select
+          value={selectedAccount}
+          onChange={(e) => setSelectedAccount(e.target.value)}
+          required
+        >
+          <option value="">Select an account</option>
+          {accounts.map((account) => (
+            <option key={account.accountId} value={account.accountId}>
+              {account.name} (Current balance: ${account.balance.toFixed(2)})
+            </option>
+          ))}
+        </select>
+        <input
+          type="number"
+          step="0.01"
+          value={newBalance}
+          onChange={(e) => setNewBalance(e.target.value)}
+          placeholder="Enter new balance"
+          required
+        />
+        <button type="submit">Update Balance</button>
+      </form>
       <h2>Linked Accounts</h2>
       <Accounts />
     </div>

@@ -242,4 +242,82 @@ app.get("/last_transaction_date/:currentProfile", async (req, res) => {
   }
 });
 
+app.post("/manual-balance-update/:currentProfile", async (req, res) => {
+  const { currentProfile } = req.params;
+  const { accountId, newBalance } = req.body;
+
+  try {
+    const updatedAccount = await prisma.account.update({
+      where: {
+        username_accountId: {
+          username: currentProfile,
+          accountId: accountId,
+        },
+      },
+      data: {
+        balance: parseFloat(newBalance),
+        lastUpdated: new Date(),
+      },
+    });
+
+    res.json({ success: true, account: updatedAccount });
+  } catch (error) {
+    console.error("Error updating balance manually:", error);
+    res.status(500).json({ error: "Failed to update balance manually" });
+  }
+});
+
+app.post("/manual-balance-update/:currentProfile", async (req, res) => {
+  const { currentProfile } = req.params;
+  const { accountId, newBalance } = req.body;
+
+  try {
+    const updatedAccount = await prisma.account.update({
+      where: {
+        username_accountId: {
+          username: currentProfile,
+          accountId: accountId,
+        },
+      },
+      data: {
+        balance: parseFloat(newBalance),
+        lastUpdated: new Date(),
+        balanceHistory: {
+          create: {
+            balance: parseFloat(newBalance),
+          },
+        },
+      },
+    });
+
+    res.json({ success: true, account: updatedAccount });
+  } catch (error) {
+    console.error("Error updating balance manually:", error);
+    res.status(500).json({ error: "Failed to update balance manually" });
+  }
+});
+
+app.get("/balance-history/:currentProfile/:accountId", async (req, res) => {
+  const { currentProfile, accountId } = req.params;
+
+  try {
+    const balanceHistory = await prisma.balanceHistory.findMany({
+      where: {
+        account: {
+          username: currentProfile,
+          accountId: accountId,
+        },
+      },
+      orderBy: {
+        date: "asc",
+      },
+    });
+
+    res.json(balanceHistory);
+  } catch (error) {
+    console.error("Error fetching balance history:", error);
+    res.status(500).json({ error: "Failed to fetch balance history" });
+  }
+});
+
 module.exports = app;

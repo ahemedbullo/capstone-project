@@ -33,11 +33,12 @@ model Account {
   username String
   user User   @relation(fields: [userId], references: [username])
   userId String
-  accountId String
+  accountId String @unique
   name String
   type String
   balance Float
   lastUpdated DateTime @default(now())
+  balanceHistory  BalanceHistory[]
   @@unique([username, accountId])
 }
 model Budget {
@@ -79,3 +80,11 @@ model UploadedStatement {
   userId String
   user User  @relation(fields: [userId], references: [username])
 }
+
+model BalanceHistory { 
+  id Int @id @default(autoincrement()) 
+  accountId String?
+  balance Float 
+  date DateTime @default(now()) 
+   account Account? @relation(fields: [accountId], references: [accountId])
+  }
