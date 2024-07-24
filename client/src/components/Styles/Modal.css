@@ -23,6 +23,7 @@
   position: relative;
 }
 .close-button {
+  color: black;
   position: sticky;
   top: 10px;
   right: 10px;
