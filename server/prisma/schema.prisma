@@ -22,7 +22,10 @@ model User {
   plaidItem String?
   accounts Account[]
   lastTransactionFetch DateTime?
-  uploadedStatements UploadedStatements[]
+  uploadedStatements UploadedStatement[]
+  financialGoals   String?
+  monthlySavingTarget Float?
+  annualIncomeTarget Float?
 }
 
 model Account {
@@ -68,7 +71,7 @@ model TempExpense {
   amount Float
 }
 
-model UploadedStatements {
+model UploadedStatement {
   id Int @id @default(autoincrement())
   filename String
   filePath String
