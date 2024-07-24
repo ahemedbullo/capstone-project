@@ -74,4 +74,50 @@ app.get("/profile", async (req, res) => {
     res.status(401).json({ error: "Invalid token" });
   }
 });
+
+app.get("/user/:username", async (req, res) => {
+  const { username } = req.params;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { username },
+      select: {
+        username: true,
+        financialGoals: true,
+        monthlySavingsTarget: true,
+        annualIncomeTarget: true,
+      },
+    });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    res.status(500).json({ error: "Failed to fetch user data" });
+  }
+});
+
+app.put("/user/:username", async (req, res) => {
+  const { username } = req.params;
+  const { financialGoals, monthlySavingsTarget, annualIncomeTarget } = req.body;
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { username },
+      data: {
+        financialGoals,
+        monthlySavingsTarget: monthlySavingsTarget
+          ? parseFloat(monthlySavingsTarget)
+          : null,
+        annualIncomeTarget: annualIncomeTarget
+          ? parseFloat(annualIncomeTarget)
+          : null,
+      },
+    });
+    res.json(updatedUser);
+  } catch (error) {
+    console.error("Error updating user data:", error);
+    res.status(500).json({ error: "Failed to update user data" });
+  }
+});
+
 module.exports = app;

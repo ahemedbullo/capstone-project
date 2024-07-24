@@ -24,7 +24,7 @@ model User {
   lastTransactionFetch DateTime?
   uploadedStatements UploadedStatement[]
   financialGoals   String?
-  monthlySavingTarget Float?
+  monthlySavingsTarget Float?
   annualIncomeTarget Float?
 }
 
