@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { UserContext } from "../UserContext.js";
 import axios from "axios";
 import { usePlaidLink } from "react-plaid-link";
+import { AccountsContext } from "../AccountsContext.js";
 
 const Accounts = () => {
   const { currentProfile } = useContext(UserContext);
@@ -10,6 +11,7 @@ const Accounts = () => {
   const [isFetchingTransactions, setIsFetchingTransactions] = useState(false);
   const [lastFetchDate, setLastFetchDate] = useState(null);
   const [updateMessage, setUpdateMessage] = useState("");
+  const { contextAccounts, setContextAccounts } = useContext(AccountsContext);
 
   useEffect(() => {
     fetchLinkToken();
@@ -34,6 +36,7 @@ const Accounts = () => {
         `http://localhost:3000/accounts/balances/${currentProfile}`
       );
       setAccounts(response.data.accounts);
+      setContextAccounts(response.data.accounts);
     } catch (error) {
       console.error("Error fetching accounts:", error);
     }
