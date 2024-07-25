@@ -282,4 +282,94 @@ app.get("/balance-history/:currentProfile/:accountId", async (req, res) => {
   }
 });
 
+app.get("/total-balance-history/:currentProfile/:days", async (req, res) => {
+  const { currentProfile, days } = req.params;
+  const daysAgo = new Date();
+  daysAgo.setDate(daysAgo.getDate() - parseInt(days));
+
+  try {
+    const accounts = await prisma.account.findMany({
+      where: { username: currentProfile },
+      select: { accountId: true },
+    });
+
+    const accountIds = accounts.map((account) => account.accountId);
+
+    const balanceHistory = await prisma.balanceHistory.findMany({
+      where: {
+        account: {
+          username: currentProfile,
+          accountId: { in: accountIds },
+        },
+        date: { gte: daysAgo },
+      },
+      orderBy: { date: "asc" },
+    });
+
+    const expenses = await prisma.expense.findMany({
+      where: {
+        userId: currentProfile,
+        purchaseDate: { gte: daysAgo },
+      },
+      orderBy: { purchaseDate: "asc" },
+    });
+
+    const dailyData = {};
+    for (
+      let d = new Date(daysAgo);
+      d <= new Date();
+      d.setDate(d.getDate() + 1)
+    ) {
+      const dateString = d.toISOString().split("T")[0];
+      dailyData[dateString] = {
+        date: dateString,
+        balance: null,
+        updated: false,
+      };
+    }
+
+    balanceHistory.forEach((entry) => {
+      const dateString = entry.date.toISOString().split("T")[0];
+      if (dailyData[dateString]) {
+        if (dailyData[dateString].balance === null) {
+          dailyData[dateString].balance = entry.balance;
+        } else {
+          dailyData[dateString].balance += entry.balance;
+        }
+        dailyData[dateString].updated = true;
+      }
+    });
+
+    let currentBalance = null;
+
+    const combinedData = Object.values(dailyData).map((day) => {
+      if (day.updated) {
+        currentBalance = day.balance;
+      } else if (currentBalance === null) {
+        return { date: day.date, balance: null };
+      }
+
+      const dailyExpenses = expenses
+        .filter((e) => e.purchaseDate.toISOString().split("T")[0] === day.date)
+        .reduce((sum, e) => sum + e.expenseAmount, 0);
+
+      if (currentBalance !== null) {
+        currentBalance -= dailyExpenses;
+      }
+
+      return {
+        date: day.date,
+        balance: currentBalance,
+      };
+    });
+
+    const filteredData = combinedData.filter((item) => item.balance !== null);
+
+    res.json(filteredData);
+  } catch (error) {
+    console.error("Error fetching total balance history:", error);
+    res.status(500).json({ error: "Failed to fetch total balance history" });
+  }
+});
+
 module.exports = app;

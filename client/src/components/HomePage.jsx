@@ -10,6 +10,7 @@ import { BudgetContext } from "../BudgetContext.js";
 import { ExpenseContext } from "../ExpenseContext.js";
 import { AccountsContext } from "../AccountsContext.js";
 import BudgetChart from "./BudgetChart.jsx";
+import BalanceChart from "./BalanceChart.jsx";
 const HomePage = () => {
   const navigate = useNavigate();
 
@@ -19,6 +20,7 @@ const HomePage = () => {
     <>
       <div className="homepage">
         <BudgetChart />
+        <BalanceChart />
         <main className="main-content">
           {
             <aside className="sidebar">
