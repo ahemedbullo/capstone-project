@@ -50,6 +50,7 @@ const BudgetPage = () => {
       updatedBudgets.sort((a, b) => b.id - a.id);
       setBudgetsWithExpenses(updatedBudgets);
       setBudgets(updatedBudgets);
+      setContextBudgets(updatedBudgets);
     } catch (error) {
       console.error("Error fetching budgets and expenses:", error);
     }
