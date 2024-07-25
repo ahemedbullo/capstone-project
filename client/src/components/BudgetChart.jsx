@@ -4,6 +4,8 @@ import { Pie } from "react-chartjs-2";
 import { BudgetContext } from "../BudgetContext";
 import { ExpenseContext } from "../ExpenseContext";
 import { AccountsContext } from "../AccountsContext";
+import { UserContext } from "../UserContext";
+import Modal from "./Modal";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -12,6 +14,8 @@ const BudgetChart = () => {
   const { contextExpenses } = useContext(ExpenseContext);
   const { contextAccounts } = useContext(AccountsContext);
   const [chartData, setChartData] = useState(null);
+  const { currentProfile } = useContext(UserContext);
+  const [selectedBudget, setSelectedBudget] = useState(null);
 
   const totalBalance = useMemo(() => {
     return contextAccounts.reduce((sum, account) => sum + account.balance, 0);
@@ -86,6 +90,15 @@ const BudgetChart = () => {
           <Pie
             data={chartData}
             options={{
+              onClick: (event, elements) => {
+                if (elements.length > 0) {
+                  const index = elements[0].index;
+                  if (index < contextBudgets.length) {
+                    const clickedBudget = contextBudgets[index];
+                    setSelectedBudget(clickedBudget);
+                  }
+                }
+              },
               plugins: {
                 tooltip: {
                   callbacks: {
@@ -129,6 +142,13 @@ const BudgetChart = () => {
           </p>
         </div>
       </div>
+      {selectedBudget && (
+        <Modal
+          budget={selectedBudget}
+          onClose={() => setSelectedBudget(null)}
+          currentProfile={currentProfile}
+        />
+      )}
     </div>
   );
 };
