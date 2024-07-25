@@ -186,8 +186,11 @@ const Profile = () => {
           <ul>
             {balanceHistory.map((entry, index) => (
               <li key={index}>
-                Date: {new Date(entry.date).toLocaleDateString()}, Balance: $
-                {entry.balance.toFixed(2)}
+                Date:{" "}
+                {new Date(
+                  new Date(entry.date).getTime() + 86400000
+                ).toLocaleDateString()}
+                , Balance: ${entry.balance.toFixed(2)}
               </li>
             ))}
           </ul>
