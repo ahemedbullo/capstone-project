@@ -93,16 +93,20 @@ const BalanceChart = () => {
 
   return (
     <div className="homepage-balance-chart-container">
+      <h2>Total Balance History</h2>
       <div className="chart-controls">
-        <select
-          value={timeRange}
-          onChange={(e) => setTimeRange(Number(e.target.value))}
-          className="time-range-select"
-        >
-          <option value={30}>30 days</option>
-          <option value={90}>90 days</option>
-          <option value={180}>180 days</option>
-        </select>
+        <div className="date-range-control">
+          <span>View: </span>
+          <select
+            value={timeRange}
+            onChange={(e) => setTimeRange(Number(e.target.value))}
+            className="time-range-select"
+          >
+            <option value={30}>30 days</option>
+            <option value={90}>90 days</option>
+            <option value={180}>180 days</option>
+          </select>
+        </div>
       </div>
       {isLoading && <p>Loading chart data...</p>}
       {error && <p className="error-message">{error}</p>}

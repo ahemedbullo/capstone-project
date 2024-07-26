@@ -85,7 +85,7 @@ const BudgetChart = () => {
 
   return (
     <div className="chart-container">
-      <h2>Budget Allocation Overview</h2>
+      <h2>Budget Overview</h2>
       <div className="chart-flex-container">
         <div className="chart-wrapper">
           <Pie
