@@ -448,4 +448,30 @@ app.get("/total-balance-history/:currentProfile/:days", async (req, res) => {
   }
 });
 
+app.post("/add-manual-account/:currentProfile", async (req, res) => {
+  const { currentProfile } = req.params;
+  const { accountName, accountType, initialBalance } = req.body;
+
+  try {
+    const newAccount = await prisma.account.create({
+      data: {
+        username: currentProfile,
+        accountId: `manual_${Date.now()}`,
+        name: accountName,
+        type: accountType,
+        balance: parseFloat(initialBalance),
+        user: { connect: { username: currentProfile } },
+        balanceHistory: {
+          create: { balance: parseFloat(initialBalance), date: new Date() },
+        },
+      },
+    });
+
+    res.json({ success: true, account: newAccount });
+  } catch (error) {
+    console.error("Error adding manual account:", error);
+    res.status(500).json({ error: "Failed to add manual account" });
+  }
+});
+
 module.exports = app;

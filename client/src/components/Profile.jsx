@@ -16,6 +16,9 @@ const Profile = () => {
     new Date().toISOString().split("T")[0]
   );
   const [balanceHistory, setBalanceHistory] = useState([]);
+  const [newAccountName, setNewAccountName] = useState("");
+  const [newAccountType, setNewAccountType] = useState("");
+  const [newAccountBalance, setNewAccountBalance] = useState("");
 
   useEffect(() => {
     fetchUserData();
@@ -100,12 +103,34 @@ const Profile = () => {
     }
   };
 
+  const handleManualAccountAdd = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(
+        `http://localhost:3000/accounts/add-manual-account/${currentProfile}`,
+        {
+          accountName: newAccountName,
+          accountType: newAccountType,
+          initialBalance: newAccountBalance,
+        }
+      );
+      alert("Account added successfully!");
+      fetchAccounts();
+      setNewAccountName("");
+      setNewAccountType("");
+      setNewAccountBalance("");
+    } catch (error) {
+      console.error("Error adding manual account:", error);
+      alert("Failed to add account. Please try again.");
+    }
+  };
+
   return (
     <div className="profile-page">
-      <h1>Your Financial Profile</h1>{" "}
+      <h1>Your Financial Profile</h1>
       <form onSubmit={handleUserDataSubmit}>
         <div>
-          <label htmlFor="financialGoals">Financial Goals:</label>{" "}
+          <label htmlFor="financialGoals">Financial Goals:</label>
           <textarea
             id="financialGoals"
             value={financialGoals}
@@ -124,7 +149,7 @@ const Profile = () => {
           />
         </div>
         <div>
-          <label htmlFor="annualIncomeTarget">Annual Income Target:</label>{" "}
+          <label htmlFor="annualIncomeTarget">Annual Income Target:</label>
           <input
             type="number"
             id="annualIncomeTarget"
@@ -134,6 +159,46 @@ const Profile = () => {
           />
         </div>
         <button type="submit">Update User Data</button>
+      </form>
+      <h2>Add Manual Account</h2>
+      <form onSubmit={handleManualAccountAdd}>
+        <div>
+          <label htmlFor="newAccountName">Account Name:</label>
+          <input
+            type="text"
+            id="newAccountName"
+            value={newAccountName}
+            onChange={(e) => setNewAccountName(e.target.value)}
+            placeholder="Enter account name"
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="newAccountType">Account Type:</label>
+          <select
+            id="newAccountType"
+            value={newAccountType}
+            onChange={(e) => setNewAccountType(e.target.value)}
+            required
+          >
+            <option value="">Select account type</option>
+            <option value="checking">Checking</option>
+            <option value="savings">Savings</option>
+          </select>
+        </div>
+        <div>
+          <label htmlFor="newAccountBalance">Initial Balance:</label>
+          <input
+            type="number"
+            id="newAccountBalance"
+            step="0.01"
+            value={newAccountBalance}
+            onChange={(e) => setNewAccountBalance(e.target.value)}
+            placeholder="Enter initial balance"
+            required
+          />
+        </div>
+        <button type="submit">Add Account</button>
       </form>
       <h2>Manual Balance Update</h2>
       <form onSubmit={handleManualBalanceUpdate}>
@@ -186,11 +251,9 @@ const Profile = () => {
           <ul>
             {balanceHistory.map((entry, index) => (
               <li key={index}>
-                Date:{" "}
-                {new Date(
-                  new Date(entry.date).getTime() + 86400000
-                ).toLocaleDateString()}
-                , Balance: ${entry.balance.toFixed(2)}
+                Date:
+                {new Date(new Date(entry.date).getTime()).toLocaleDateString()},
+                Balance: ${entry.balance.toFixed(2)}
               </li>
             ))}
           </ul>
