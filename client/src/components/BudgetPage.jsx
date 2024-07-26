@@ -6,6 +6,7 @@ import Modal from "./Modal.jsx";
 import { BudgetContext } from "../BudgetContext.js";
 import { ExpenseContext } from "../ExpenseContext.js";
 import { AccountsContext } from "../AccountsContext.js";
+import { exportToPDF, exportToExcel } from "../ExportUtil.js";
 
 const BudgetPage = () => {
   const [budgets, setBudgets] = useState([]);
@@ -137,9 +138,27 @@ const BudgetPage = () => {
     budget.budgetName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleExport = (format) => {
+    const dataToExport = budgetsWithExpenses.map((budget) => ({
+      Name: budget.budgetName,
+      Amount: budget.budgetAmount,
+      Spent: budget.totalExpenses,
+      Left: budget.amountLeft,
+    }));
+    if (format === "pdf") {
+      exportToPDF(dataToExport, "budgets.pdf", "Budget Report"); // or 'Expense Report' for ExpensePage
+    } else if (format === "excel") {
+      exportToExcel(dataToExport, "budgets.xlsx", "Budgets"); // or 'Expenses' for ExpensePage
+    }
+  };
+
   return (
     <>
       <div className="budget-page">
+        <div className="export-buttons">
+          <button onClick={() => handleExport("pdf")}>Export to PDF</button>
+          <button onClick={() => handleExport("excel")}>Export to Excel</button>
+        </div>
         <div className="budget-form">
           <h3>Create a New Budget</h3>
           <form onSubmit={handleSubmit}>
