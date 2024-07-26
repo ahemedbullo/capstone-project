@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./Styles/Modal.css";
+import "./Styles/ConfirmStatementModal.css";
 
 const ConfirmStatementModal = ({ expenses, onConfirm, onClose }) => {
   const [editedExpenses, setEditedExpenses] = useState(expenses);
@@ -26,9 +26,9 @@ const ConfirmStatementModal = ({ expenses, onConfirm, onClose }) => {
   };
 
   return (
-    <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div className="modal-content">
-        <button className="close-button" onClick={onClose}>
+    <div className="confirm-modal-overlay" onClick={handleOverlayClick}>
+      <div className="confirm-modal-content">
+        <button className="confirm-close-button" onClick={onClose}>
           X
         </button>
         <h2>Review Parsed Expenses</h2>
@@ -76,8 +76,12 @@ const ConfirmStatementModal = ({ expenses, onConfirm, onClose }) => {
           </tbody>
         </table>
         <div className="modal-actions">
-          <button onClick={handleConfirm}>Confirm Expenses</button>
-          <button onClick={onClose}>Cancel</button>
+          <button onClick={onClose} className="cancel-btn">
+            Cancel
+          </button>
+          <button onClick={handleConfirm} className="confirm-btn">
+            Confirm Expenses
+          </button>
         </div>
       </div>
     </div>
