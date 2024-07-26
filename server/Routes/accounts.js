@@ -138,31 +138,46 @@ app.post("/update_balances/:currentProfile", async (req, res) => {
       access_token: user.plaidAccessToken,
     });
     const accounts = balanceResponse.data.accounts;
-
+    const updatedAccounts = [];
     for (const account of accounts) {
-      await prisma.account.update({
+      const updatedAccount = await prisma.account.upsert({
         where: {
           username_accountId: {
             username: currentProfile,
             accountId: account.account_id,
           },
         },
-        data: {
+        update: {
           balance: account.balances.current,
           lastUpdated: new Date(),
+          balanceHistory: {
+            create: { balance: account.balances.current, date: new Date() },
+          },
+        },
+        create: {
+          username: currentProfile,
+          accountId: account.account_id,
+          name: account.name,
+          type: account.type,
+          balance: account.balances.current,
+          user: { connect: { username: currentProfile } },
+          balanceHistory: {
+            create: { balance: account.balances.current, date: new Date() },
+          },
         },
       });
+
+      updatedAccounts.push(updatedAccount);
     }
 
-    const updatedAccounts = await prisma.account.findMany({
-      where: { username: currentProfile },
-      orderBy: { lastUpdated: "desc" },
+    res.json({
+      success: true,
+      message: "Account balances updated successfully",
+      accounts: updatedAccounts,
     });
-
-    res.json({ success: true, accounts: updatedAccounts });
   } catch (error) {
-    console.error("Error updating balances: ", error);
-    res.status(500).json({ error: "Failed to update balances" });
+    console.error("Error updating balances:", error);
+    res.status(500).json({ error: "Failed to update account balances" });
   }
 });
 
@@ -213,7 +228,7 @@ app.post("/fetch_transactions/:currentProfile", async (req, res) => {
         });
 
         if (existingExpense) {
-          await prisma.expense.update({
+          await prisma.expense.updateMany({
             where: { transactionId: transaction.transaction_id },
             data: {
               expenseName: transaction.name,
