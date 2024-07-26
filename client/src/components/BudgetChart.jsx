@@ -1,11 +1,12 @@
 import React, { useContext, useEffect, useState, useMemo } from "react";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Pie } from "react-chartjs-2";
-import { BudgetContext } from "../BudgetContext";
-import { ExpenseContext } from "../ExpenseContext";
-import { AccountsContext } from "../AccountsContext";
-import { UserContext } from "../UserContext";
+import { BudgetContext } from "../BudgetContext.js";
+import { ExpenseContext } from "../ExpenseContext.js";
+import { AccountsContext } from "../AccountsContext.js";
+import { UserContext } from "../UserContext.js";
 import Modal from "./Modal";
+import "./Styles/BudgetChart.css";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 

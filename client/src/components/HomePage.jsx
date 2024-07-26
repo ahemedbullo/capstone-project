@@ -1,43 +1,33 @@
-import React, { useContext, useState } from "react";
-import { UserContext } from "../UserContext.js";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import BudgetPage from "./BudgetPage.jsx";
-import ExpensePage from "./ExpensePage.jsx";
+import React, { useState, useEffect } from "react";
 import "./Styles/HomePage.css";
-import Accounts from "./Accounts.jsx";
-import { BudgetContext } from "../BudgetContext.js";
-import { ExpenseContext } from "../ExpenseContext.js";
-import { AccountsContext } from "../AccountsContext.js";
 import BudgetChart from "./BudgetChart.jsx";
 import BalanceChart from "./BalanceChart.jsx";
-const HomePage = () => {
-  const navigate = useNavigate();
+import DataFetcher from "./DataFetcher.jsx";
 
-  const { contextAccounts } = useContext(AccountsContext);
+const HomePage = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <div className="loading">Loading...</div>;
+  }
 
   return (
     <>
+      <DataFetcher />
       <div className="homepage">
-        <BudgetChart />
-        <BalanceChart />
-        <main className="main-content">
-          {
-            <aside className="sidebar">
-              <Accounts />
-            </aside>
-          }
-          <section className="budget-expense-container">
-            <div className="card budget-card">
-              <h2>Budgets</h2>
-              <BudgetPage />
-            </div>
-            <div className="card expense-card">
-              <h2>Expenses</h2>
-              <ExpensePage />
-            </div>
-          </section>
-        </main>
+        <div className="charts-container">
+          <div className="chart-wrapper">
+            <BudgetChart />
+          </div>
+          <div className="chart-wrapper">
+            <BalanceChart />
+          </div>
+        </div>
       </div>
     </>
   );
