@@ -399,6 +399,14 @@ const ExpensePage = () => {
           <button type="submit">Add Expenses</button>
         </form>
       </div>
+      <div className="search-container">
+        <input
+          type="text"
+          placeholder="Search expenses..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
       <div className="date-range">
         <label htmlFor="start-date">Start Date: </label>
         <input
@@ -437,14 +445,7 @@ const ExpensePage = () => {
           <option value="name">Name</option>
         </select>
       </div>
-      <div className="search-container">
-        <input
-          type="text"
-          placeholder="Search expenses..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
+
       <div className="expenses-container">
         {expenses.map((expense) => (
           <div key={expense.id} className="expense">
