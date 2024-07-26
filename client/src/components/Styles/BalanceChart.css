@@ -12,7 +12,7 @@
   
   .balance-chart-title {
     font-weight: bold;
-    font-size: 1.2em; /* Match the size with the Budget Chart title */
+    font-size: 1.2em; 
   }
   
   .date-range-control {
