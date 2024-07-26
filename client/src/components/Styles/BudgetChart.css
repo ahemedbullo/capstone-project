@@ -1,0 +1,39 @@
+.chart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 400px;
+  width: 100%; 
+
+}
+
+.chart-title {
+  align-self: flex-start; 
+  font-weight: bold;
+  font-size: 1.2em; 
+  margin-bottom: 15px;
+}
+
+.chart-content {
+  display: flex;
+  flex: 1;
+}
+
+.chart-wrapper {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.chart-summary {
+  display: block;
+  width: 200px;
+  padding-left: 20px;
+  align-self: center;
+}
+
+.chart-wrapper > div {
+  width: 150%;
+  height: 150%;
+}
+

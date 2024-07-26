@@ -122,6 +122,50 @@ app.get("/balances/:currentProfile", async (req, res) => {
   }
 });
 
+app.post("/update_balances/:currentProfile", async (req, res) => {
+  const { currentProfile } = req.params;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { username: currentProfile },
+      select: { plaidAccessToken: true },
+    });
+
+    if (!user || !user.plaidAccessToken) {
+      return res.status(400).json({ error: "No linked accounts found" });
+    }
+
+    const balanceResponse = await client.accountsBalanceGet({
+      access_token: user.plaidAccessToken,
+    });
+    const accounts = balanceResponse.data.accounts;
+
+    for (const account of accounts) {
+      await prisma.account.update({
+        where: {
+          username_accountId: {
+            username: currentProfile,
+            accountId: account.account_id,
+          },
+        },
+        data: {
+          balance: account.balances.current,
+          lastUpdated: new Date(),
+        },
+      });
+    }
+
+    const updatedAccounts = await prisma.account.findMany({
+      where: { username: currentProfile },
+      orderBy: { lastUpdated: "desc" },
+    });
+
+    res.json({ success: true, accounts: updatedAccounts });
+  } catch (error) {
+    console.error("Error updating balances: ", error);
+    res.status(500).json({ error: "Failed to update balances" });
+  }
+});
+
 app.post("/fetch_transactions/:currentProfile", async (req, res) => {
   const { currentProfile } = req.params;
   try {
@@ -212,6 +256,23 @@ app.post("/fetch_transactions/:currentProfile", async (req, res) => {
   }
 });
 
+app.put("/rename_account/:currentProfile/:accountId", async (req, res) => {
+  const { currentProfile, accountId } = req.params;
+  const { newName } = req.body;
+  try {
+    const updatedAccount = await prisma.account.update({
+      where: {
+        username_accountId: { username: currentProfile, accountId: accountId },
+      },
+      data: { name: newName },
+    });
+    res.json({ success: true, account: updatedAccount });
+  } catch (error) {
+    console.error("Error renaming account: ", error);
+    res.status(500).json({ error: "Failed to rename account" });
+  }
+});
+
 app.delete("/delete_account/:currentProfile/:accountId", async (req, res) => {
   const { currentProfile, accountId } = req.params;
   try {
@@ -279,6 +340,96 @@ app.get("/balance-history/:currentProfile/:accountId", async (req, res) => {
   } catch (error) {
     console.error("Error fetching balance history:", error);
     res.status(500).json({ error: "Failed to fetch balance history" });
+  }
+});
+
+app.get("/total-balance-history/:currentProfile/:days", async (req, res) => {
+  const { currentProfile, days } = req.params;
+  const daysAgo = new Date();
+  daysAgo.setDate(daysAgo.getDate() - parseInt(days));
+
+  try {
+    const accounts = await prisma.account.findMany({
+      where: { username: currentProfile },
+      select: { accountId: true },
+    });
+
+    const accountIds = accounts.map((account) => account.accountId);
+
+    const balanceHistory = await prisma.balanceHistory.findMany({
+      where: {
+        account: {
+          username: currentProfile,
+          accountId: { in: accountIds },
+        },
+        date: { gte: daysAgo },
+      },
+      orderBy: { date: "asc" },
+    });
+
+    const expenses = await prisma.expense.findMany({
+      where: {
+        userId: currentProfile,
+        purchaseDate: { gte: daysAgo },
+      },
+      orderBy: { purchaseDate: "asc" },
+    });
+
+    const dailyData = {};
+    for (
+      let d = new Date(daysAgo);
+      d <= new Date();
+      d.setDate(d.getDate() + 1)
+    ) {
+      const dateString = d.toISOString().split("T")[0];
+      dailyData[dateString] = {
+        date: dateString,
+        balance: null,
+        updated: false,
+      };
+    }
+
+    balanceHistory.forEach((entry) => {
+      const dateString = entry.date.toISOString().split("T")[0];
+      if (dailyData[dateString]) {
+        if (dailyData[dateString].balance === null) {
+          dailyData[dateString].balance = entry.balance;
+        } else {
+          dailyData[dateString].balance += entry.balance;
+        }
+        dailyData[dateString].updated = true;
+      }
+    });
+
+    let currentBalance = null;
+
+    const combinedData = Object.values(dailyData).map((day) => {
+      if (day.updated) {
+        currentBalance = day.balance;
+      } else if (currentBalance === null) {
+        return { date: day.date, balance: null };
+      }
+
+      const dailyExpenses = expenses
+        .filter((e) => e.purchaseDate.toISOString().split("T")[0] === day.date)
+        .reduce((sum, e) => sum + e.expenseAmount, 0);
+
+      if (currentBalance !== null) {
+        currentBalance -= dailyExpenses;
+      }
+
+      return {
+        date: day.date,
+        balance: currentBalance,
+      };
+    });
+
+    const filteredData = combinedData.filter((item) => item.balance !== null);
+
+    res.json(filteredData);
+  } catch (error) {
+    console.error("Error fetching total balance history:", error);
+    res.status(500).json({ error: "Failed to fetch total balance history" });
   }
 });
 

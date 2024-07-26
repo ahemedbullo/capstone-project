@@ -1,0 +1,31 @@
+.homepage-balance-chart-container {
+    width: 100%;
+    height: 400px;
+  }
+  
+  .balance-chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .balance-chart-title {
+    font-weight: bold;
+    font-size: 1.2em; 
+  }
+  
+  .date-range-control {
+    display: flex;
+    align-items: center;
+  }
+  
+  .date-range-control span {
+    margin-right: 10px;
+  }
+  
+  .time-range-select {
+    padding: 5px;
+  }
+  
+  

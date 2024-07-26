@@ -73,7 +73,7 @@ function App() {
                     className="header"
                     style={{ padding: "30px", justifyContent: "center" }}
                   >
-                    <h1>Welcome, Log in or Sign Up to track your Budget!</h1>
+                    <h1>Log in or Sign Up to track your Budget!</h1>
                   </header>
                 </>
               )}

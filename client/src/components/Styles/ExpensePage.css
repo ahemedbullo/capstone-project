@@ -1,4 +1,5 @@
 .create-expense-box {
+  display: block;
   background-color: #f9f9f9;
   border: 1px solid #dddddd;
   border-radius: 5px;
@@ -14,13 +15,13 @@
 
 .create-expense-box input,
 .create-expense-box select {
-  display: block;
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
+  box-sizing: border-box;
 }
 
 .create-expense-box button {
@@ -33,6 +34,7 @@
   display: inline-block;
   font-size: 16px;
   margin-top: 10px;
+  margin-right: 10px;
   cursor: pointer;
   border-radius: 5px;
   transition: background-color 0.3s ease;
@@ -42,11 +44,33 @@
   background-color: #45a049;
 }
 
+.create-expense-box form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.create-expense-box form > div {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  padding: 15px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.create-expense-box form button[type="button"],
+.create-expense-box form button[type="submit"] {
+  width: fit-content;
+  justify-self: start;
+}
 
 .date-range,
 .sorting-options {
   margin-bottom: 20px;
   display: flex;
+  justify-content: flex-end;
   align-items: center;
   flex-wrap: wrap;
 }
@@ -63,23 +87,23 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
-  margin-right: 10px;
+  margin-left: 10px;
 }
 
 .date-range button {
-  background-color:  #45a049;
+  background-color: #45a049;
   color: white;
   border: none;
   padding: 8px 15px;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  margin-left: 10px;
 }
 
 .date-range button:hover {
-  background-color: #45a049;
+  background-color: #3d8b40;
 }
-
 
 .expenses-container {
   display: flex;
@@ -92,7 +116,7 @@
   border: 1px solid #ddd;
   border-radius: 5px;
   padding: 20px;
-  width: calc(50% - 10px); 
+  width: calc(50% - 10px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
 }
@@ -124,7 +148,7 @@
 }
 
 .expense button:hover {
-  background-color: #45a049;
+  background-color: #3d8b40;
 }
 
 .expense .delete-btn {
@@ -134,7 +158,6 @@
 .expense .delete-btn:hover {
   background-color: #c0392b;
 }
-
 
 @media (max-width: 768px) {
   .expense {
@@ -147,11 +170,15 @@
     align-items: flex-start;
   }
   
-  .date-range input,
-  .sorting-options select,
-  .date-range button {
-    margin-top: 5px;
-    margin-bottom: 5px;
+  .date-range > *,
+  .sorting-options > * {
+    margin-left: 0;
+    margin-bottom: 10px;
+    width: 100%;
+  }
+  
+  .create-expense-box form > div {
+    grid-template-columns: 1fr;
   }
 }
 
