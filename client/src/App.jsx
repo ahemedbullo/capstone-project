@@ -15,6 +15,7 @@ import BudgetPage from "./components/BudgetPage.jsx";
 import Accounts from "./components/Accounts.jsx";
 import NavBar from "./components/NavBar.jsx";
 import Profile from "./components/Profile.jsx";
+import logo from "./assets/logo.png";
 
 function App() {
   const [currentProfile, setCurrentProfile] = useState(null);
@@ -60,6 +61,9 @@ function App() {
               {currentProfile ? (
                 <>
                   <header className="header">
+                    <div className="header-left">
+                      <img src={logo} alt="logo" className="logo" />
+                    </div>
                     <h1>Welcome, {currentProfile}</h1>
                     <button className="logout-btn" onClick={handleLogout}>
                       Logout
@@ -73,6 +77,9 @@ function App() {
                     className="header"
                     style={{ padding: "30px", justifyContent: "center" }}
                   >
+                    <div className="header-left">
+                      <img src={logo} alt="logo" className="logo" />
+                    </div>
                     <h1>Log in or Sign Up to track your Budget!</h1>
                   </header>
                 </>
@@ -97,7 +104,7 @@ function App() {
                 </Routes>
               </div>
               <footer className="footer">
-                <p>&copy; Budget App Created by Ahemed Summer 2024</p>
+                <p>&copy; SaveSmart Created by Ahemed Summer 2024</p>
               </footer>
             </div>
           </AccountsContext.Provider>

@@ -23,6 +23,19 @@
   .header h1{
     margin: 0;
   }
+  ​​.header-left {
+    display: flex; 
+    align-items: center;
+   }
+
+   .logo {
+     height: 70px; 
+     margin-right: 15px; 
+     border-radius: 20px;
+     object-fit:fill;
+     background-color: white;
+     padding: 4px;
+    }
   .main{
     flex-grow: 1;
     padding: 20px;
