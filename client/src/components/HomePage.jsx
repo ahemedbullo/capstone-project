@@ -6,14 +6,16 @@ import DataFetcher from "./DataFetcher.jsx";
 import { UserContext } from "../UserContext.js";
 import { BudgetContext } from "../BudgetContext.js";
 import { ExpenseContext } from "../ExpenseContext.js";
+import { AccountsContext } from "../AccountsContext.js";
+import PopUp from "./PopUp.jsx";
 import axios from "axios";
 
 const HomePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { currentProfile } = useContext(UserContext);
   const { contextBudgets, setContextBudgets } = useContext(BudgetContext);
-  const { setContextExpenses } = useContext(ExpenseContext);
-
+  const { contextExpenses, setContextExpenses } = useContext(ExpenseContext);
+  const { contextAccounts, setContextAccounts } = useContext(AccountsContext);
   const [budgetName, setBudgetName] = useState("");
   const [budgetAmount, setBudgetAmount] = useState("");
   const [expenseName, setExpenseName] = useState("");
@@ -22,6 +24,8 @@ const HomePage = () => {
     new Date().toISOString().split("T")[0]
   );
   const [selectedBudget, setSelectedBudget] = useState("");
+
+  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1000);
@@ -68,6 +72,16 @@ const HomePage = () => {
     }
   };
 
+  useEffect(() => {
+    if (!isLoading) {
+      const hasNoData =
+        contextBudgets.length === 0 &&
+        contextExpenses.length === 0 &&
+        contextAccounts.length === 0;
+      setShowPopup(hasNoData);
+    }
+  }, [isLoading, contextBudgets, contextExpenses, contextAccounts]);
+
   if (isLoading) {
     return <div className="loading">Loading...</div>;
   }
@@ -75,6 +89,7 @@ const HomePage = () => {
   return (
     <>
       <DataFetcher />
+      {showPopup && <PopUp onClose={() => setShowPopup(false)} />}
       <div className="homepage">
         <div className="quick-actions">
           <form onSubmit={handleQuickBudgetSubmit} className="quick-form">
