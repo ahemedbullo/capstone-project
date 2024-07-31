@@ -26,6 +26,7 @@ model User {
   financialGoals   String?
   monthlySavingsTarget Float?
   annualIncomeTarget Float?
+  savingsGoals SavingsGoal[]
 }
 
 model Account {
@@ -88,3 +89,15 @@ model BalanceHistory {
   date DateTime @default(now()) 
    account Account? @relation(fields: [accountId], references: [accountId])
   }
+
+model SavingsGoal {
+   id Int @id @default(autoincrement()) 
+   name String 
+   targetAmount Float 
+   currentAmount Float @default(0) 
+   deadline DateTime 
+   createdAt DateTime @default(now()) 
+   updatedAt DateTime @updatedAt 
+   user User @relation(fields: [userId], references: [username]) 
+   userId String
+    }

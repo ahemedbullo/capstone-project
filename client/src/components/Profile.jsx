@@ -19,10 +19,56 @@ const Profile = () => {
   const [newAccountName, setNewAccountName] = useState("");
   const [newAccountType, setNewAccountType] = useState("");
   const [newAccountBalance, setNewAccountBalance] = useState("");
+  const [savingsGoals, setSavingsGoals] = useState([]);
+  const [newGoal, setNewGoal] = useState({
+    name: "",
+    targetAmount: "",
+    deadline: "",
+  });
+
+  const handleAddGoal = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(
+        `http://localhost:3000/savings-goals/${currentProfile}`,
+        newGoal
+      );
+      setNewGoal({ name: "", targetAmount: "", deadline: "" });
+      fetchSavingsGoals();
+    } catch (error) {
+      console.error("Error adding savings goal:", error);
+    }
+  };
+
+  const handleUpdateGoal = async (goalId, updatedAmount) => {
+    try {
+      await axios.put(
+        `http://localhost:3000/savings-goals/${currentProfile}/${goalId}`,
+        {
+          currentAmount: updatedAmount,
+        }
+      );
+      fetchSavingsGoals();
+    } catch (error) {
+      console.error("Error updating savings goal:", error);
+    }
+  };
+
+  const handleDeleteGoal = async (goalId) => {
+    try {
+      await axios.delete(
+        `http://localhost:3000/savings-goals/${currentProfile}/${goalId}`
+      );
+      fetchSavingsGoals();
+    } catch (error) {
+      console.error("Error deleting savings goal:", error);
+    }
+  };
 
   useEffect(() => {
     fetchUserData();
     fetchAccounts();
+    fetchSavingsGoals();
   }, [currentProfile]);
 
   const fetchUserData = async () => {
@@ -125,6 +171,17 @@ const Profile = () => {
     }
   };
 
+  const fetchSavingsGoals = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/savings-goals/${currentProfile}`
+      );
+      setSavingsGoals(response.data);
+    } catch (error) {
+      console.error("Error fetching savings goals:", error);
+    }
+  };
+
   return (
     <div className="profile-page">
       <h1>Your Financial Profile</h1>
@@ -160,6 +217,56 @@ const Profile = () => {
         </div>
         <button type="submit">Update User Data</button>
       </form>
+      <div className="savings-goals">
+        <h2>Savings Goals</h2>
+        <form onSubmit={handleAddGoal}>
+          <input
+            type="text"
+            placeholder="Goal Name"
+            value={newGoal.name}
+            onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })}
+            required
+          />
+          <input
+            type="number"
+            placeholder="Target Amount"
+            value={newGoal.targetAmount}
+            onChange={(e) =>
+              setNewGoal({ ...newGoal, targetAmount: e.target.value })
+            }
+            required
+          />
+          <input
+            type="date"
+            value={newGoal.deadline}
+            onChange={(e) =>
+              setNewGoal({ ...newGoal, deadline: e.target.value })
+            }
+            required
+          />
+          <button type="submit">Add Goal</button>
+        </form>
+
+        <div className="savings-goals-list">
+          {savingsGoals.map((goal) => (
+            <div key={goal.id} className="savings-goal-item">
+              <h3>{goal.name}</h3>
+              <p>Target: ${goal.targetAmount}</p>
+              <p>Current: ${goal.currentAmount}</p>
+              <p>Deadline: {new Date(goal.deadline).toLocaleDateString()}</p>
+              <input
+                type="number"
+                value={goal.currentAmount}
+                onChange={(e) => handleUpdateGoal(goal.id, e.target.value)}
+              />
+              <button onClick={() => handleDeleteGoal(goal.id)}>
+                Delete Goal
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <h2>Add Manual Account</h2>
       <form onSubmit={handleManualAccountAdd}>
         <div>

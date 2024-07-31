@@ -314,6 +314,9 @@ app.get("/last_transaction_date/:currentProfile", async (req, res) => {
       where: { username: currentProfile },
       select: { lastTransactionFetch: true },
     });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
     res.json({ lastTransactionFetch: user.lastTransactionFetch });
   } catch (error) {
     console.error("Error fetching last transaction date:", error);
