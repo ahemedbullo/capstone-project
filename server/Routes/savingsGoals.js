@@ -73,4 +73,19 @@ app.delete("/:currentProfile/:goalId", async (req, res) => {
   }
 });
 
+app.put("/:currentProfile/:goalId", async (req, res) => {
+  const { currentProfile, goalId } = req.params;
+  const { currentAmount } = req.body;
+  try {
+    const updatedGoal = await prisma.savingsGoal.update({
+      where: { id: parseInt(goalId), userId: currentProfile },
+      data: { currentAmount: parseFloat(currentAmount) },
+    });
+    res.json(updatedGoal);
+  } catch (error) {
+    console.error("Error updating savings goal:", error);
+    res.status(500).json({ error: "Failed to update savings goal" });
+  }
+});
+
 module.exports = app;

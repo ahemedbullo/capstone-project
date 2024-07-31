@@ -3,6 +3,7 @@ import { UserContext } from "../UserContext.js";
 import axios from "axios";
 import Accounts from "./Accounts";
 import "./Styles/Profile.css";
+import GoalAchievedPopup from "./GoalAchieved.jsx";
 
 const Profile = () => {
   const { currentProfile } = useContext(UserContext);
@@ -26,6 +27,8 @@ const Profile = () => {
     deadline: "",
   });
 
+  const [achievedGoal, setAchievedGoal] = useState(null);
+
   const handleAddGoal = async (e) => {
     e.preventDefault();
     try {
@@ -42,12 +45,17 @@ const Profile = () => {
 
   const handleUpdateGoal = async (goalId, updatedAmount) => {
     try {
-      await axios.put(
+      const response = await axios.put(
         `http://localhost:3000/savings-goals/${currentProfile}/${goalId}`,
-        {
-          currentAmount: updatedAmount,
-        }
+        { currentAmount: updatedAmount }
       );
+      const updatedGoal = response.data;
+      if (
+        parseFloat(updatedGoal.currentAmount) >=
+        parseFloat(updatedGoal.targetAmount)
+      ) {
+        setAchievedGoal(updatedGoal);
+      }
       fetchSavingsGoals();
     } catch (error) {
       console.error("Error updating savings goal:", error);
@@ -369,6 +377,12 @@ const Profile = () => {
       <div className="linked-accounts">
         <h2>Linked Accounts</h2> <Accounts />
       </div>
+      {achievedGoal && (
+        <GoalAchievedPopup
+          goal={achievedGoal}
+          onClose={() => setAchievedGoal(null)}
+        />
+      )}
     </div>
   );
 };
