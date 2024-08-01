@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "SavingsGoal" ADD COLUMN     "archived" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "status" TEXT NOT NULL DEFAULT 'IN_PROGRESS';

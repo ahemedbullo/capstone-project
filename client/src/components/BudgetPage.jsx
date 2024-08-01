@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { UserContext } from "../UserContext.js";
 import axios from "axios";
 import "./Styles/BudgetPage.css";
@@ -7,6 +7,7 @@ import { BudgetContext } from "../BudgetContext.js";
 import { ExpenseContext } from "../ExpenseContext.js";
 import { AccountsContext } from "../AccountsContext.js";
 import { exportToPDF, exportToExcel } from "../ExportUtil.js";
+import { exportData } from "../ExportUtil.js";
 
 const BudgetPage = () => {
   const [budgets, setBudgets] = useState([]);
@@ -20,6 +21,10 @@ const BudgetPage = () => {
   const { contextAccounts } = useContext(AccountsContext); //todo use this to get total balance
   const [editingBudget, setEditingBudget] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showExportOptions, setShowExportOptions] = useState(false);
+  const [exportType, setExportType] = useState("basic");
+  const [selectedBudgets, setSelectedBudgets] = useState({});
+  const exportContainerRef = useRef(null);
 
   useEffect(() => {
     fetchBudgetsWithExpenses();
@@ -138,26 +143,124 @@ const BudgetPage = () => {
     budget.budgetName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleExport = (format) => {
-    const dataToExport = budgetsWithExpenses.map((budget) => ({
-      Name: budget.budgetName,
-      Amount: budget.budgetAmount,
-      Spent: budget.totalExpenses,
-      Left: budget.amountLeft,
-    }));
-    if (format === "pdf") {
-      exportToPDF(dataToExport, "budgets.pdf", "Budget Report"); // or 'Expense Report' for ExpensePage
-    } else if (format === "excel") {
-      exportToExcel(dataToExport, "budgets.xlsx", "Budgets"); // or 'Expenses' for ExpensePage
+  useEffect(() => {
+    if (showExportOptions && exportContainerRef.current) {
+      const rect = exportContainerRef.current.getBoundingClientRect();
+      const optionsElement =
+        exportContainerRef.current.querySelector(".export-options");
+      if (optionsElement) {
+        if (rect.top < optionsElement.offsetHeight) {
+          optionsElement.style.bottom = "auto";
+          optionsElement.style.top = "100%";
+        } else {
+          optionsElement.style.bottom = "100%";
+          optionsElement.style.top = "auto";
+        }
+      }
     }
+  }, [showExportOptions]);
+  const handleExport = (format) => {
+    let dataToExport;
+
+    if (exportType === "basic") {
+      dataToExport = budgetsWithExpenses
+        .filter((budget) => selectedBudgets[budget.id])
+        .map((budget) => ({
+          Name: budget.budgetName,
+          Amount: budget.budgetAmount.toFixed(2),
+          Spent: budget.totalExpenses.toFixed(2),
+          Left: (budget.budgetAmount - budget.totalExpenses).toFixed(2),
+        }));
+    } else {
+      dataToExport = budgetsWithExpenses
+        .filter((budget) => selectedBudgets[budget.id])
+        .map((budget) => ({
+          Name: budget.budgetName,
+          Amount: budget.budgetAmount.toFixed(2),
+          Spent: budget.totalExpenses.toFixed(2),
+          Left: (budget.budgetAmount - budget.totalExpenses).toFixed(2),
+          Expenses: budget.expenses.map((expense) => ({
+            Name: expense.expenseName,
+            Amount: expense.expenseAmount.toFixed(2),
+            Date: new Date(expense.purchaseDate).toLocaleDateString(),
+          })),
+        }));
+    }
+    if (dataToExport.length === 0) {
+      alert("Please select at least one budget to export.");
+      return;
+    }
+
+    exportData(dataToExport, "budgets", "Budget Report", format, exportType);
+
+    setShowExportOptions(false);
+  };
+
+  const toggleBudgetSelection = (budgetId) => {
+    setSelectedBudgets((prev) => ({ ...prev, [budgetId]: !prev[budgetId] }));
+  };
+  const selectAllBudgets = () => {
+    const allSelected = budgetsWithExpenses.reduce((acc, budget) => {
+      acc[budget.id] = true;
+      return acc;
+    }, {});
+    setSelectedBudgets(allSelected);
+  };
+  const deselectAllBudgets = () => {
+    setSelectedBudgets({});
   };
 
   return (
     <>
       <div className="budget-page">
-        <div className="export-buttons">
-          <button onClick={() => handleExport("pdf")}>Export to PDF</button>
-          <button onClick={() => handleExport("excel")}>Export to Excel</button>
+        <div className="export-container" ref={exportContainerRef}>
+          <button onClick={() => setShowExportOptions(!showExportOptions)}>
+            Export
+          </button>
+          {showExportOptions && (
+            <div className="export-options">
+              <div>
+                <label>
+                  <input
+                    type="radio"
+                    value="basic"
+                    checked={exportType === "basic"}
+                    onChange={() => setExportType("basic")}
+                  />
+                  Basic
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    value="detailed"
+                    checked={exportType === "detailed"}
+                    onChange={() => setExportType("detailed")}
+                  />
+                  Detailed
+                </label>
+              </div>
+              <div>
+                <button onClick={selectAllBudgets}>Select All</button>
+                <button onClick={deselectAllBudgets}>Deselect All</button>
+              </div>
+              <div className="budget-selection">
+                {budgetsWithExpenses.map((budget) => (
+                  <label key={budget.id}>
+                    <input
+                      type="checkbox"
+                      checked={!!selectedBudgets[budget.id]}
+                      onChange={() => toggleBudgetSelection(budget.id)}
+                    />
+                    {budget.budgetName}
+                  </label>
+                ))}
+              </div>
+              <button onClick={() => handleExport("pdf")}>Export as PDF</button>
+              <button onClick={() => handleExport("excel")}>
+                Export as Excel
+              </button>
+            </div>
+          )}
         </div>
         <div className="budget-form">
           <h3>Create a New Budget</h3>
