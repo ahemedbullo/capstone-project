@@ -51,3 +51,11 @@ export const exportToExcel = (data, fileName, sheetName) => {
   XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
   XLSX.writeFile(workbook, fileName);
 };
+
+export const exportData = (data, fileName, title, format) => {
+  if (format === "pdf") {
+    exportToPDF(data, `${fileName}.pdf`, title);
+  } else if (format === "excel") {
+    exportToExcel(data, `${fileName}.xlsx`, title);
+  }
+};

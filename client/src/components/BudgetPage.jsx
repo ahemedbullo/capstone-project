@@ -7,6 +7,7 @@ import { BudgetContext } from "../BudgetContext.js";
 import { ExpenseContext } from "../ExpenseContext.js";
 import { AccountsContext } from "../AccountsContext.js";
 import { exportToPDF, exportToExcel } from "../ExportUtil.js";
+import { exportData } from "../ExportUtil.js";
 
 const BudgetPage = () => {
   const [budgets, setBudgets] = useState([]);
@@ -20,6 +21,7 @@ const BudgetPage = () => {
   const { contextAccounts } = useContext(AccountsContext); //todo use this to get total balance
   const [editingBudget, setEditingBudget] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showExportOptions, setShowExportOptions] = useState(false);
 
   useEffect(() => {
     fetchBudgetsWithExpenses();
@@ -145,19 +147,25 @@ const BudgetPage = () => {
       Spent: budget.totalExpenses,
       Left: budget.amountLeft,
     }));
-    if (format === "pdf") {
-      exportToPDF(dataToExport, "budgets.pdf", "Budget Report"); // or 'Expense Report' for ExpensePage
-    } else if (format === "excel") {
-      exportToExcel(dataToExport, "budgets.xlsx", "Budgets"); // or 'Expenses' for ExpensePage
-    }
+    exportData(dataToExport, "budgets", "Budget Report", format);
+    setShowExportOptions(false);
   };
 
   return (
     <>
       <div className="budget-page">
-        <div className="export-buttons">
-          <button onClick={() => handleExport("pdf")}>Export to PDF</button>
-          <button onClick={() => handleExport("excel")}>Export to Excel</button>
+        <div className="export-container">
+          <button onClick={() => setShowExportOptions(!showExportOptions)}>
+            Export
+          </button>
+          {showExportOptions && (
+            <div className="export-options">
+              <button onClick={() => handleExport("pdf")}>Export as PDF</button>
+              <button onClick={() => handleExport("excel")}>
+                Export as Excel
+              </button>
+            </div>
+          )}
         </div>
         <div className="budget-form">
           <h3>Create a New Budget</h3>
